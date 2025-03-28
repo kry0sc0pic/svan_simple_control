@@ -45,3 +45,9 @@ these are the following variables you can give as part of the `SvanCommand` mess
 | 5 | HEIGHT |
 
 //TODO: complete docs
+
+
+### examples
+
+**sine wave circle**
+<video src="examples/videos/sine_wave_circle.mov">
