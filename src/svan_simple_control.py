@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
-import os
-import sys
 from svan_simple_control_msgs.msg import SvanCommand
 from std_msgs.msg import Float32MultiArray
 import rospy
-
-
-#TODO: control mixing
 
 rospy.init_node('svan_simple_control_node')
 
 
 key_pub = rospy.Publisher('/svan/io_interface', Float32MultiArray, queue_size=1)
 
-current_operation_mode = -1
+current_operation_mode = SvanCommand.MODE_TROT
+current_key_data = Float32MultiArray()
+current_key_data.data = [0] * 9
+current_key_data.data[0] = 4
+key_pub.publish(current_key_data)
 
 # Utility functions
 def constrain_value(value,minumum: float = 0.0,maximum: float = 1.0):
@@ -26,118 +25,111 @@ def scale_height(height: float):
 # Core
 
 def set_operation_mode(mode: int):
-    global current_operation_mode
+    global current_operation_mode, current_key_data
     key_data = Float32MultiArray()
     key_data.data = [0] * 9
-    if mode == SvanCommand.TROT:
+    if mode == SvanCommand.MODE_TROT:
         rospy.loginfo("Trot Mode")
         key_data.data[0] = 4
-        current_operation_mode = SvanCommand.TROT
-        key_pub.publish(key_data)
-    elif mode == SvanCommand.PUSHUP:
+        current_operation_mode = SvanCommand.MODE_TROT
+    elif mode == SvanCommand.MODE_PUSHUP:
         rospy.loginfo("Pushup Mode")
-        current_operation_mode = SvanCommand.PUSHUP
+        current_operation_mode = SvanCommand.MODE_PUSHUP
         key_data.data[0] = 3
-        key_pub.publish(key_data)
-    elif mode == SvanCommand.TWIRL:
+    elif mode == SvanCommand.MODE_TWIRL:
         rospy.loginfo("Twirl Mode")
-        print("Setting operation mode to twirl")
-        current_operation_mode = SvanCommand.TWIRL
+        current_operation_mode = SvanCommand.MODE_TWIRL
         key_data.data[0] = 2
-        key_pub.publish(key_data)
-    elif mode == SvanCommand.STOP:
+    elif mode == SvanCommand.MODE_STOP:
         rospy.loginfo("Stop Mode")
-        print("Setting operation mode to stop")
-        current_operation_mode = SvanCommand.STOP
+        current_operation_mode = SvanCommand.MODE_STOP
         key_data.data[0] = 1
-        key_pub.publish(key_data)
-    elif mode == SvanCommand.SLEEP:
+    elif mode == SvanCommand.MODE_SLEEP:
         rospy.loginfo("Sleep Mode")
-        print("Setting operation mode to sleep")
-        current_operation_mode = SvanCommand.SLEEP
+        current_operation_mode = SvanCommand.MODE_SLEEP
         key_data.data[0] = 6
-        key_pub.publish(key_data)
+    
+    current_key_data = key_data
+    key_pub.publish(key_data)
 
 def set_movement(direction: int, velocity: float):
-    global current_operation_mode
-    if current_operation_mode != SvanCommand.TROT:
+    global current_operation_mode, current_key_data
+    if current_operation_mode != SvanCommand.MODE_TROT:
         rospy.logwarn("Movement commands are only available in trot mode")
         return
-    key_data = Float32MultiArray()
-    key_data.data = [0] * 9
-    key_data.data[0] = 4
     constrained_velocity = constrain_value(velocity)
     if direction == SvanCommand.DIRECTION_FORWARD:
         rospy.loginfo(f"Moving forward with velocity {constrained_velocity}", )
-        key_data.data[2] = constrained_velocity
+        current_key_data.data[2] = constrained_velocity
     elif direction == SvanCommand.DIRECTION_BACKWARD:
         rospy.loginfo(f"Moving backward with velocity {constrained_velocity}", )
-        key_data.data[2] = -1 * constrained_velocity
+        current_key_data.data[2] = -1 * constrained_velocity
     elif direction == SvanCommand.DIRECTION_LEFT:
         rospy.loginfo(f"Moving left with velocity {constrained_velocity}", )
-        key_data.data[1] = -1 * constrained_velocity
+        current_key_data.data[1] = -1 * constrained_velocity
     elif direction == SvanCommand.DIRECTION_RIGHT:
         rospy.loginfo(f"Moving right with velocity {constrained_velocity}", )
-        key_data.data[1] = constrained_velocity
+        current_key_data.data[1] = constrained_velocity
     elif direction == SvanCommand.DIRECTION_NONE:
         rospy.loginfo("Stopping movement")
-        key_data.data[1:] = [0] * 8
-    key_pub.publish(key_data)
+        current_key_data.data[1] = 0
+        current_key_data.data[2] = 0
+    
+    key_pub.publish(current_key_data)
 
 def set_height(cmd: int):
-    if current_operation_mode != SvanCommand.TROT:
+    global current_key_data
+    if current_operation_mode != SvanCommand.MODE_TROT:
         rospy.logwarn("Height commands are only available in trot mode")
         return
-    key_data = Float32MultiArray()
-    key_data.data = [0] * 9
-    key_data.data[0] = 4
+    
     if cmd == SvanCommand.HEIGHT_UP:
         rospy.loginfo("Adjusting height up")
-        key_data.data[8] = 1
+        current_key_data.data[8] = 1
     elif cmd == SvanCommand.HEIGHT_DOWN:
         rospy.loginfo("Adjusting height down")
-        key_data.data[8] = -1
-    key_pub.publish(key_data)
+        current_key_data.data[8] = -1
+
+    key_pub.publish(current_key_data)
 
 def set_roll(roll: float):
-    if current_operation_mode != SvanCommand.TROT:
+    global current_key_data
+    if current_operation_mode != SvanCommand.MODE_TROT:
         rospy.logwarn("Roll commands are only available in trot mode")
         return
-    key_data = Float32MultiArray()
-    key_data.data = [0] * 9
-    key_data.data[0] = 4
+    
     constrained_roll = constrain_value(roll, -1.0, 1.0)
-    key_data.data[3] = constrained_roll
-    key_pub.publish(key_data)
+    current_key_data.data[3] = constrained_roll
+    key_pub.publish(current_key_data)
 
 def set_pitch(pitch: float):
-    if current_operation_mode != SvanCommand.TROT:
+    global current_key_data
+    if current_operation_mode != SvanCommand.MODE_TROT:
         rospy.logwarn("Pitch commands are only available in trot mode")
         return
-    key_data = Float32MultiArray()
-    key_data.data = [0] * 9
-    key_data.data[0] = 4
+        
     constrained_pitch = constrain_value(pitch, -1.0, 1.0)
-    key_data.data[4] = constrained_pitch
-    key_pub.publish(key_data)
+    current_key_data.data[4] = constrained_pitch
+    key_pub.publish(current_key_data)
 
 def set_yaw(direction: int, velocity: float):
-    if current_operation_mode != SvanCommand.TROT:
+    if current_operation_mode != SvanCommand.MODE_TROT:
         rospy.logwarn("Yaw commands are only available in trot mode")
         return
-    key_data = Float32MultiArray()
-    key_data.data = [0] * 9
-    key_data.data[0] = 4
+   
     constrained_velocity = constrain_value(velocity)
-    key_data.data[5] = constrained_velocity * (-1 if direction == SvanCommand.YAW_RIGHT else 1)
-    key_pub.publish(key_data)
+    current_key_data.data[5] = constrained_velocity * (-1 if direction == SvanCommand.YAW_RIGHT else 1)
+    key_pub.publish(current_key_data)
 
 # Subscription
 def callback(command: SvanCommand):
+    rospy.loginfo(f"Received command: {command}")
+
     # operation mode
-    if command.command_type == SvanCommand.OPERATION_MODE:
+    if command.command_type == SvanCommand.COMMAND_OPERATION_MODE:
         rospy.loginfo(f"Setting operation mode to {command.operation_mode}")
         set_operation_mode(command.operation_mode)
+        rospy.loginfo(f"Operation mode set to {command.operation_mode}")
 
     # linear movement
     elif command.command_type == SvanCommand.COMMAND_MOVEMENT:
