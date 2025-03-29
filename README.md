@@ -113,4 +113,4 @@ these are the following variables you can give as part of the `SvanCommand` mess
 ### sine wave circle
 moves in a circular path while varying height.
 source: `examples/sine_wave_circle.py`
-<video src="examples/videos/sine_wave_circle.mov">
+<video controls src="https://github.com/kry0sc0pic/svan_simple_control/raw/refs/heads/main/examples/videos/sine_wave_circle.mov"></video>
