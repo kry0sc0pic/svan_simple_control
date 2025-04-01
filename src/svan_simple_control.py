@@ -61,7 +61,7 @@ def set_movement(direction: int, velocity: float):
     if direction == SvanCommand.DIRECTION_FORWARD:
         rospy.loginfo(f"Moving forward with velocity {constrained_velocity}", )
         current_key_data.data[2] = constrained_velocity
-    elif direction == SvanCommand.DIRECTION_BACKWARD:
+    elif direction == SvanCommand.DIRECTION_BACK:
         rospy.loginfo(f"Moving backward with velocity {constrained_velocity}", )
         current_key_data.data[2] = -1 * constrained_velocity
     elif direction == SvanCommand.DIRECTION_LEFT:
