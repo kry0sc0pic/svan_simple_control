@@ -111,6 +111,23 @@ these are the following variables you can give as part of the `SvanCommand` mess
 ## examples
 
 ### sine wave circle
+
 moves in a circular path while varying height.
+
 source: `examples/sine_wave_circle.py`
-<video controls src="https://github.com/kry0sc0pic/svan_simple_control/raw/refs/heads/main/examples/videos/sine_wave_circle.mov"></video>
+
+### hand gesture movement control
+
+author: [Atharv Nawale]()
+
+move and stop the svan using hand gestures. powered by mediapipe.
+
+source: `examples/hand_control.py`
+
+### hand gesture height control
+
+author: [Dhruv Shah]()
+
+control the svan's height using gestures. powered by mediapipe.
+
+source: `examples/height_control.py`
