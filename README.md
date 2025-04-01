@@ -12,9 +12,9 @@ git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.git
 
 # add to build script
 cd ~/xMo
-echo "catkin make svan_simple_control_msgs" >> svan_build.sh
+echo "catkin build svan_simple_control_msgs" >> svan_build.sh
 echo "source devel/setup.bash" >> svan_build.sh
-echo "catkin make svan_simple_control" >> svan_build.sh
+echo "catkin build svan_simple_control" >> svan_build.sh
 echo "source devel/setup.bash" >> svan_build.sh
 
 # build workspace
