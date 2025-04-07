@@ -5,163 +5,133 @@ import rospy
 
 rospy.init_node('svan_simple_control_node')
 
+command_publisher = rospy.Publisher('/svan/io_interface',Float32MultiArray,queue_size=1)
 
-key_pub = rospy.Publisher('/svan/io_interface', Float32MultiArray, queue_size=1)
-
-current_operation_mode = SvanCommand.MODE_TROT
+current_operation_mode = SvanCommand.MODE_STOP
 current_key_data = Float32MultiArray()
 current_key_data.data = [0] * 9
-current_key_data.data[0] = 4
-key_pub.publish(current_key_data)
 
-# Utility functions
-def constrain_value(value,minumum: float = 0.0,maximum: float = 1.0):
+def constrain_value(value,minumum: float = -1.0,maximum: float = 1.0):
     return max(minumum, min(value, maximum))
-# for later
-def scale_height(height: float):
-    constrained_height = max(0.0, min(height, 1.0))
-    rescaled_height = 1.5 + (2 * constrained_height)
-    return rescaled_height
-# Core
+
 
 def set_operation_mode(mode: int):
-    global current_operation_mode, current_key_data
-    key_data = Float32MultiArray()
-    key_data.data = [0] * 9
+    global current_operation_mode, current_key_data, command_publisher
+    current_key_data.data = [0] * 9
     if mode == SvanCommand.MODE_TROT:
         rospy.loginfo("Trot Mode")
-        key_data.data[0] = 4
         current_operation_mode = SvanCommand.MODE_TROT
+        current_key_data.data[0] = 4.0
     elif mode == SvanCommand.MODE_PUSHUP:
         rospy.loginfo("Pushup Mode")
         current_operation_mode = SvanCommand.MODE_PUSHUP
-        key_data.data[0] = 3
+        current_key_data.data[0] = 3.0
     elif mode == SvanCommand.MODE_TWIRL:
         rospy.loginfo("Twirl Mode")
         current_operation_mode = SvanCommand.MODE_TWIRL
-        key_data.data[0] = 2
+        current_key_data.data[0] = 2.0
     elif mode == SvanCommand.MODE_STOP:
         rospy.loginfo("Stop Mode")
         current_operation_mode = SvanCommand.MODE_STOP
-        key_data.data[0] = 1
+        current_key_data.data[0] = 1.0
     elif mode == SvanCommand.MODE_SLEEP:
         rospy.loginfo("Sleep Mode")
         current_operation_mode = SvanCommand.MODE_SLEEP
-        key_data.data[0] = 6
-    
-    current_key_data = key_data
-    key_pub.publish(key_data)
+        current_key_data.data[0] = 6.0
 
-def set_movement(direction: int, velocity: float):
+    command_publisher.publish(current_key_data)
+
+def set_velocity(vel_x: float = 0.0, vel_y: float = 0.0):
     global current_operation_mode, current_key_data
-    if current_operation_mode != SvanCommand.MODE_TROT:
-        rospy.logwarn("Movement commands are only available in trot mode")
+    if vel_x == 0.0 and vel_y == 0.0:
+        if current_operation_mode == SvanCommand.MODE_TROT:
+            set_operation_mode(SvanCommand.MODE_STOP)
         return
-    constrained_velocity = constrain_value(velocity)
-    if direction == SvanCommand.DIRECTION_FORWARD:
-        rospy.loginfo(f"Moving forward with velocity {constrained_velocity}", )
-        current_key_data.data[2] = constrained_velocity
-    elif direction == SvanCommand.DIRECTION_BACK:
-        rospy.loginfo(f"Moving backward with velocity {constrained_velocity}", )
-        current_key_data.data[2] = -1 * constrained_velocity
-    elif direction == SvanCommand.DIRECTION_LEFT:
-        rospy.loginfo(f"Moving left with velocity {constrained_velocity}", )
-        current_key_data.data[1] = -1 * constrained_velocity
-    elif direction == SvanCommand.DIRECTION_RIGHT:
-        rospy.loginfo(f"Moving right with velocity {constrained_velocity}", )
-        current_key_data.data[1] = constrained_velocity
-    elif direction == SvanCommand.DIRECTION_NONE:
-        rospy.loginfo("Stopping movement")
-        current_key_data.data[1] = 0
-        current_key_data.data[2] = 0
-    
-    key_pub.publish(current_key_data)
 
-def set_height(cmd: int):
-    global current_key_data
     if current_operation_mode != SvanCommand.MODE_TROT:
-        rospy.logwarn("Height commands are only available in trot mode")
-        return
+        set_operation_mode(SvanCommand.MODE_TROT)
     
-    if cmd == SvanCommand.HEIGHT_UP:
-        rospy.loginfo("Adjusting height up")
+    vel_x = constrain_value(vel_x)
+    vel_y = constrain_value(vel_y)
+    current_key_data.data[1] = vel_x
+    current_key_data.data[2] = vel_y
+    command_publisher.publish(current_key_data)
+
+def set_roll(magnitude: float):
+    global current_key_data
+    magnitude = constrain_value(magnitude)
+    current_key_data.data[3] = magnitude
+    command_publisher.publish(current_key_data)
+
+def set_pitch(magnitude: float):
+    global current_key_data
+    magnitude = constrain_value(magnitude)
+    current_key_data.data[4] = magnitude
+    command_publisher.publish(current_key_data)
+
+def set_yaw(direction: int = SvanCommand.YAW_NONE):
+    global current_key_data
+    if direction == SvanCommand.YAW_NONE and current_key_data.data[5] != 0:
+        current_key_data.data[5] = 0
+        command_publisher.publish(current_key_data)
+    
+    elif direction == SvanCommand.YAW_RIGHT and current_key_data.data[5] != -1.0:
+        current_key_data.data[5] = -1.0
+        command_publisher.publish(current_key_data)
+    
+    elif direction == SvanCommand.YAW_RIGHT and current_key_data.data[5] != 1.0:
+        current_key_data.data[5] = 1.0
+        command_publisher.publish(current_key_data)
+
+def set_height(state: int):
+    global current_key_data
+    
+    if state == SvanCommand.HEIGHT_UP and current_key_data.data[8] != 1:
         current_key_data.data[8] = 1
-    elif cmd == SvanCommand.HEIGHT_DOWN:
-        rospy.loginfo("Adjusting height down")
-        current_key_data.data[8] = -1
-
-    key_pub.publish(current_key_data)
-
-def set_roll(roll: float):
-    global current_key_data
-    if current_operation_mode != SvanCommand.MODE_TROT:
-        rospy.logwarn("Roll commands are only available in trot mode")
-        return
+        command_publisher.publish(current_key_data)
     
-    constrained_roll = constrain_value(roll, -1.0, 1.0)
-    current_key_data.data[3] = constrained_roll
-    key_pub.publish(current_key_data)
+    elif state == SvanCommand.HEIGHT_DOWN and current_key_data.data[8] != -1:
+        current_key_data.data[8] = -1
+        command_publisher.publish(current_key_data)
 
-def set_pitch(pitch: float):
-    global current_key_data
-    if current_operation_mode != SvanCommand.MODE_TROT:
-        rospy.logwarn("Pitch commands are only available in trot mode")
-        return
-        
-    constrained_pitch = constrain_value(pitch, -1.0, 1.0)
-    current_key_data.data[4] = constrained_pitch
-    key_pub.publish(current_key_data)
-
-def set_yaw(direction: int, velocity: float):
-    if current_operation_mode != SvanCommand.MODE_TROT:
-        rospy.logwarn("Yaw commands are only available in trot mode")
-        return
-   
-    constrained_velocity = constrain_value(velocity)
-    current_key_data.data[5] = constrained_velocity * (-1 if direction == SvanCommand.YAW_RIGHT else 1)
-    key_pub.publish(current_key_data)
-
-# Subscription
-def callback(command: SvanCommand):
-    rospy.loginfo(f"Received command: {command}")
+def handle_new_command(command: SvanCommand):
+    rospy.loginfo(f"Recieved Command: {command}")
 
     # operation mode
     if command.command_type == SvanCommand.COMMAND_OPERATION_MODE:
         rospy.loginfo(f"Setting operation mode to {command.operation_mode}")
-        set_operation_mode(command.operation_mode)
-        rospy.loginfo(f"Operation mode set to {command.operation_mode}")
+        set_operation_mode(mode=command.operation_mode)
 
     # linear movement
     elif command.command_type == SvanCommand.COMMAND_MOVEMENT:
-        rospy.loginfo(f"Setting movement to {command.direction} with velocity {command.velocity}")
-        set_movement(command.direction, command.velocity)
-        rospy.loginfo(f"Movement set to {command.direction} with velocity {command.velocity}")
-    
+        rospy.loginfo(f"Setting Velocity: Vel_X: {command.vel_x} Vel_Y: {command.vel_y}")
+        set_velocity(vel_x=command.vel_x,vel_y=command.vel_y)
+
     # vertical height
     elif command.command_type == SvanCommand.COMMAND_HEIGHT:
         rospy.loginfo(f"Setting height to {command.height}")
-        set_height(command.height)
+        set_height(state=command.height)
     
     # roll 
     elif command.command_type == SvanCommand.COMMAND_ROLL:
         rospy.loginfo(f"Setting roll to {command.roll}")
-        set_roll(command.roll)
+        set_roll(magnitude=command.roll)
 
     # pitch
     elif command.command_type == SvanCommand.COMMAND_PITCH:
         rospy.loginfo(f"Setting pitch to {command.pitch}")
-        set_pitch(command.pitch)
+        set_pitch(magnitude=command.pitch)
 
     # yaw
     elif command.command_type == SvanCommand.COMMAND_YAW:
-        rospy.loginfo(f"Setting yaw to {'left' if command.direction == 0 else 'right'} with velocity {command.velocity}")
-        set_yaw(command.direction,command.velocity)
+        rospy.loginfo(f"Setting yaw to {command.yaw}")
+        set_yaw(direction=command.yaw)
 
-
-sub = rospy.Subscriber('/svan/simple_control', SvanCommand, callback)
+rospy.Subscriber('/svan/simple_control',SvanCommand,handle_new_command)
 
 if __name__ == '__main__':
     try:
+        rospy.loginfo("READY")
         rospy.spin()
     except rospy.ROSInterruptException:
         pass

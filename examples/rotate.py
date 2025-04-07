@@ -5,6 +5,8 @@ import rospy
 rospy.init_node('rotate_example_node')
 c_pub = rospy.Publisher('/svan/simple_control',SvanCommand,queue_size=1)
 
+SIM = True
+
 stop_cmd = SvanCommand()
 stop_cmd.command_type = SvanCommand.COMMAND_OPERATION_MODE
 stop_cmd.operation_mode = SvanCommand.MODE_STOP
@@ -29,7 +31,7 @@ print("SPEED")
 rospy.sleep(0.1)
 vel_cmd = SvanCommand()
 vel_cmd.command_type = SvanCommand.COMMAND_MOVEMENT
-vel_cmd.vel_y = -0.192
+vel_cmd.vel_y = 0.0000 if SIM else -0.192
 vel_cmd.vel_x = 0.0
 c_pub.publish(vel_cmd)
 

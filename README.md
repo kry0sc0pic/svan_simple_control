@@ -1,15 +1,13 @@
 # svan_simple_control
 
-//TODO: Updates
-
-## setup
+## setup (simulation)
 ```bash
 # cd into workspace
 cd ~/xMo/src
 
 # clone packages
 git clone https://github.com/kry0sc0pic/svan_simple_control.git
-git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.git
+git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.
 
 # add to build script
 cd ~/xMo
@@ -18,17 +16,41 @@ echo "source devel/setup.bash" >> svan_build.sh
 echo "catkin build svan_simple_control" >> svan_build.sh
 echo "source devel/setup.bash" >> svan_build.sh
 
-# build workspace
-./svan_build
+# build packages
+catkin build svan_simple_control_msgs
+catkin build svan_simple_control
+source devel/setup.bash
 ```
 
-## running
+## setup (hardware)
+```bash
+# cd into workspace
+cd ~/dev/xMo/src
+
+# clone packages
+git clone https://github.com/kry0sc0pic/svan_simple_control.git
+git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.
+
+# add to build script
+cd ~/dev/xMo
+echo "catkin build svan_simple_control_msgs" >> svan_build.sh
+echo "source devel/setup.bash" >> svan_build.sh
+echo "catkin build svan_simple_control" >> svan_build.sh
+echo "source devel/setup.bash" >> svan_build.sh
+
+# build packages
+catkin build svan_simple_control_msgs
+catkin build svan_simple_control
+source devel/setup.bash
+```
+
+## running (simulation)
 after starting the gazebo simulation launch file and the mcp.py file. run the following in a third terminal
 
 ```bash
 cd ~/xMo
 source devel/setup.bash
-rosrun svan_simple_control svan_simple_control.py
+rosrun svan_simple_control simulation.py
 ```
 
 _now open 4th terminal are run your script. replace `<script>` with the filename of the example you want to run._
@@ -38,7 +60,24 @@ source devel/setup.bash
 python3 src/svan_simple_control/examples/<script>.py
 ```
 
-## message definition
+### running (hardware)
+after completing all the startup steps (joystick calibration, sleep calibration, moetus interface launch and starting the `mcp.py`). run the following commands in two ssh sessions on the SVAN.
+
+_in the first ssh session_
+```bash
+cd ~/dev/xMo
+source devel/setup.bash
+rosrun svan_simple_control hardware.py
+```
+
+_in the second ssh session_
+```bash
+cd ~/dev/xMo
+source devel/setup.bash
+python3 src/svan_simple_control/examples/<script>.py
+``` 
+
+## message definitions
 these are the following variables you can give as part of the `SvanCommand` message. You can view the source [here](https://github.com/kry0sc0pic/svan_simple_control_msgs)
 
 0. `command_type` (`uint8`) - what aspect you want to control
@@ -62,27 +101,12 @@ these are the following variables you can give as part of the `SvanCommand` mess
     | 4 | TROT |
     | 5 | SLEEP |
 
-2. `direction` (`uint8`) - direction of movement or yaw when setting velocity. used when `command_type` is `1` or `4`.
-
-    ***Linear Movement (`command_type` 1)***
-    | value | direction |
-    | --- | --- |
-    | 0 | FORWARD |
-    | 1 | BACK |
-    | 2 | LEFT |
-    | 3 | RIGHT | 
-    | 4 | NONE |
-
-    _`NONE` direction is the equivalent of STOP operation mode. Using this removes the need to switch back to TROT mode after switching to STOP_
-
-    ***Yaw Movement (`command_type` 4)***
-    | value | direction |
-    | --- | --- |
-    | 0 | LEFT |
-    | 1 | RIGHT |
 
 
-3. `height` (`uint8`) - height profile to set. used when `command_type` is `5`.
+
+
+
+2. `height` (`uint8`) - height profile to set. used when `command_type` is `5`.
 
     | value | height |
     | --- | --- |
@@ -91,23 +115,36 @@ these are the following variables you can give as part of the `SvanCommand` mess
 
     _granular height control is being actively developled_
 
-4. `velocity` (`float32`) - normalised magnitude of velocity. used for linear movement and yaw commands (`command_type` is `1` or `4`). value is constrained to `0 - 1` range.
+3. `vel_x` (`float32`) (`-1.0` - `1.0`) - normalised value of velocity in x-axis. postive x-axis is the right of the robot.
+
+4. `vel_y` (`float32`) (`-1.0` - `1.0`) - normalised value of velcity in y-axis. positive y-axis is the front of the robot.
 
 5. `roll` (`float32`) - normalised roll angle. used when `command_type` is `2`.
 
     | value | roll angle |
     | --- | --- |
-    | 0 | LEFT |
-    | 0.5 | CENTER |
+    | -1 | LEFT |
+    | 0 | CENTER |
     | 1 | RIGHT |
 
 6. `pitch` (`float32`) - normalised pitch angle. used when command_type is `3`.
 
     | value | roll angle |
     | --- | --- |
-    | 0 | FRONT |
-    | 0.5 | CENTER |
-    | 1 | BACK |
+    | 1 | FRONT |
+    | 0 | CENTER |
+    | -1 | BACK |
+
+7. `yaw` (`uint8`) - yaw direction. used when command_type is `4`.
+
+    | value | direction |
+    | --- | --- |
+    | 0 | LEFT |
+    | 1 | RIGHT |
+    | 2 | NONE |
+
+
+//TODO: update examples
 
 ## examples
 
