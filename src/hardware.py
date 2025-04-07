@@ -10,42 +10,36 @@ command_publisher = rospy.Publisher('/svan/joystick_data',Float32MultiArray,queu
 current_operation_mode = SvanCommand.MODE_STOP
 current_joystick_data = Float32MultiArray()
 current_joystick_data.data = [0] * 9
-current_joystick_data.data[0] = 1
-command_publisher.publish(current_joystick_data)
-
-
-
 
 def constrain_value(value,minumum: float = -1.0,maximum: float = 1.0):
     return max(minumum, min(value, maximum))
 
 
 def set_operation_mode(mode: int):
-    global current_operation_mode, current_key_data
-    new_joystick_data = Float32MultiArray()
-    new_joystick_data.data = [0] * 9
+    global current_operation_mode, current_joystick_data, command_publisher
+    current_joystick_data.data = [0] * 9
     if mode == SvanCommand.MODE_TROT:
         rospy.loginfo("Trot Mode")
-        new_joystick_data.data[0] = 4.0
+        current_joystick_data.data[0] = 4.0
         current_operation_mode = SvanCommand.MODE_TROT
     elif mode == SvanCommand.MODE_PUSHUP:
         rospy.loginfo("Pushup Mode")
         current_operation_mode = SvanCommand.MODE_PUSHUP
-        new_joystick_data.data[0] = 3
+        current_joystick_data.data[0] = 3.0
     elif mode == SvanCommand.MODE_TWIRL:
         rospy.loginfo("Twirl Mode")
         current_operation_mode = SvanCommand.MODE_TWIRL
-        new_joystick_data.data[0] = 2
+        current_joystick_data.data[0] = 2.0
     elif mode == SvanCommand.MODE_STOP:
         rospy.loginfo("Stop Mode")
         current_operation_mode = SvanCommand.MODE_STOP
-        new_joystick_data.data[0] = 1
+        current_joystick_data.data[0] = 1.0
     elif mode == SvanCommand.MODE_SLEEP:
         rospy.loginfo("Sleep Mode")
         current_operation_mode = SvanCommand.MODE_SLEEP
-        new_joystick_data.data[0] = 6
+        current_joystick_data.data[0] = 6.0
 
-    current_joystick_data = new_joystick_data
+    command_publisher.publish(current_joystick_data)
 
 def set_velocity(vel_x: float = 0.0, vel_y: float = 0.0):
     global current_operation_mode, current_joystick_data
@@ -62,6 +56,7 @@ def set_velocity(vel_x: float = 0.0, vel_y: float = 0.0):
     
     current_joystick_data.data[1] = vel_x
     current_joystick_data.data[2] = vel_y
+    command_publisher.publish(current_joystick_data)
 
 def set_roll(magnitude: float):
     global current_joystick_data
@@ -77,19 +72,19 @@ def set_pitch(magnitude: float):
 
 def set_yaw(direction: int = SvanCommand.YAW_NONE):
     global current_joystick_data
-    if direction == SvanCommand.YAW_NONE and (current_joystick_data[5] != 0 or current_joystick_data[6] != 0):
-        current_joystick_data[5] = 0
-        current_joystick_data[6] = 0
+    if direction == SvanCommand.YAW_NONE and (current_joystick_data.data[5] != 0 or current_joystick_data.data[6] != 0):
+        current_joystick_data.data[5] = 0
+        current_joystick_data.data[6] = 0
         command_publisher.publish(current_joystick_data)
     
-    elif direction == SvanCommand.YAW_RIGHT and current_joystick_data[5] == 0.0:
-        current_joystick_data[5] = 1
-        current_joystick_data[6] = 0
+    elif direction == SvanCommand.YAW_RIGHT and current_joystick_data.data[5] == 0.0:
+        current_joystick_data.data[5] = 1
+        current_joystick_data.data[6] = 0
         command_publisher.publish(current_joystick_data)
     
-    elif direction == SvanCommand.YAW_RIGHT and current_joystick_data[6] == 0.0:
-        current_joystick_data[5] = 0
-        current_joystick_data[6] = 1
+    elif direction == SvanCommand.YAW_RIGHT and current_joystick_data.data[6] == 0.0:
+        current_joystick_data.data[5] = 0
+        current_joystick_data.data[6] = 1
         command_publisher.publish(current_joystick_data)
 
 def set_height(state: int):
