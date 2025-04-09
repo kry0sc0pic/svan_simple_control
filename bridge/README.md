@@ -15,14 +15,15 @@ This bridge provides a REST API to control the SVAN robot using HTTP requests in
 
 ### Prerequisites
 
-- ROS environment with the SVAN robot packages installed
+- Ubuntu with ROS Noetic installed
 - Python 3.6 or higher
+- The SVAN robot packages installed in your ROS workspace
 
 ### Installation
 
-1. Clone this repository (if not already done):
+1. Clone the repository:
 ```bash
-git clone https://github.com/kry0sc0pic/svan_simple_control.git
+git clone https://github.com/orionop/svan_simple_control.git
 cd svan_simple_control
 ```
 
@@ -33,18 +34,34 @@ source bridge_venv/bin/activate
 pip install -r bridge/requirements.txt
 ```
 
+The requirements include:
+- fastapi
+- uvicorn
+- pydantic
+- requests
+- PyYAML (for ROS integration)
+- rospkg (for ROS integration)
+- catkin_pkg (for ROS integration)
+
 ## Usage
 
 ### Starting the Bridge
 
-1. Make sure your ROS environment is sourced:
+1. Make sure ROS Core is running first in a separate terminal:
 ```bash
+roscore
+```
+
+2. Make sure your ROS environment is sourced in a new terminal:
+```bash
+source ~/catkin_ws/devel/setup.bash  # For your catkin workspace
+# OR
 source ~/xMo/devel/setup.bash  # For simulation
 # OR
 source ~/dev/xMo/devel/setup.bash  # For hardware
 ```
 
-2. Run the bridge:
+3. Run the bridge:
 ```bash
 source bridge_venv/bin/activate
 python3 bridge/bridge.py
@@ -56,6 +73,19 @@ http://127.0.0.1:8888/docs
 ```
 
 If ROS is not available, the bridge will run in "mock mode", where it will accept commands but not send them to ROS.
+
+### How the Bridge Works
+
+The bridge acts as an intermediary between HTTP clients and the ROS system:
+
+1. **HTTP Server**: Accepts REST API requests from clients (web apps, mobile apps, scripts)
+2. **Request Validation**: Validates and sanitizes incoming requests
+3. **ROS Message Conversion**: Converts HTTP requests into proper ROS messages
+4. **Publishing**: Publishes messages to the `/svan/simple_control` ROS topic
+5. **Response Handling**: Returns success or error status to the client
+6. **History Tracking**: Keeps track of commands for debugging
+
+This allows you to control the SVAN robot from any programming language or environment that can make HTTP requests, without needing to implement ROS directly.
 
 ### API Endpoints
 
@@ -113,18 +143,9 @@ python3 bridge/bridge.py
 
 You can then check the command history at `/history` to verify your commands were received.
 
-## Integration with Other Systems
-
-You can easily integrate with any system that supports HTTP requests, including:
-
-- Web applications
-- Mobile apps
-- IoT devices
-- Custom scripts
-
 ## Troubleshooting
 
-- If you encounter connection errors, make sure the bridge is running on the correct port (8888).
-- If commands aren't being received by the robot, check the API status to verify ROS is connected.
+- If you see "Unable to register with master node [http://localhost:11311]", it means roscore is not running. Start roscore in a separate terminal first.
+- If commands aren't being received by the robot, check that the simple control node (simulation.py or hardware.py) is running.
 - View the command history at `/history` to verify your commands are being received.
 - For detailed logs, check the FastAPI server output. 
