@@ -16,7 +16,7 @@ catkin init
 # Clone the repositories
 cd ~/catkin_ws/src
 git clone https://github.com/orionop/svan_simple_control.git
-git clone https://github.com/orionop/svan_simple_control_msgs.git
+# Note: If you encounter issues with the repository URLs, check with the maintainer for the correct URLs
 
 # Install dependencies
 cd ~/catkin_ws
@@ -41,7 +41,7 @@ cd ~/xMo/src
 
 # clone packages
 git clone https://github.com/orionop/svan_simple_control.git
-git clone https://github.com/orionop/svan_simple_control_msgs.git
+# For the messages package, contact repo maintainer for correct URL
 
 # add to build script
 cd ~/xMo
@@ -63,7 +63,7 @@ cd ~/dev/xMo/src
 
 # clone packages
 git clone https://github.com/orionop/svan_simple_control.git
-git clone https://github.com/orionop/svan_simple_control_msgs.git
+git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.git
 
 # add to build script
 cd ~/dev/xMo
@@ -112,7 +112,7 @@ python3 src/svan_simple_control/examples/<script>.py
 ``` 
 
 ## Message definitions
-these are the following variables you can give as part of the `SvanCommand` message. You can view the source [here](https://github.com/orionop/svan_simple_control_msgs)
+these are the following variables you can give as part of the `SvanCommand` message. You can view the source by contacting the repo maintainer.
 
 0. `command_type` (`uint8`) - what aspect you want to control
 
