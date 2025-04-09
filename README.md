@@ -1,13 +1,47 @@
 # svan_simple_control
 
-## setup (simulation)
+## Setup Instructions
+
+### Ubuntu Setup
+```bash
+# Install ROS dependencies (if not already installed)
+sudo apt update
+sudo apt install -y python3-catkin-tools python3-rosdep ros-noetic-catkin
+
+# Create and initialize workspace (if you don't have one already)
+mkdir -p ~/catkin_ws/src
+cd ~/catkin_ws
+catkin init
+
+# Clone the repositories
+cd ~/catkin_ws/src
+git clone https://github.com/orionop/svan_simple_control.git
+git clone https://github.com/orionop/svan_simple_control_msgs.git
+
+# Install dependencies
+cd ~/catkin_ws
+rosdep update
+rosdep install --from-paths src --ignore-src -r -y
+
+# Build the packages
+catkin build svan_simple_control_msgs
+source devel/setup.bash
+catkin build svan_simple_control
+source devel/setup.bash
+
+# Optional: Add to your .bashrc for convenience
+echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+```
+
+### Setup (simulation)
 ```bash
 # cd into workspace
 cd ~/xMo/src
 
 # clone packages
-git clone https://github.com/kry0sc0pic/svan_simple_control.git
-git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.
+git clone https://github.com/orionop/svan_simple_control.git
+git clone https://github.com/orionop/svan_simple_control_msgs.git
 
 # add to build script
 cd ~/xMo
@@ -22,14 +56,14 @@ catkin build svan_simple_control
 source devel/setup.bash
 ```
 
-## setup (hardware)
+### Setup (hardware)
 ```bash
 # cd into workspace
 cd ~/dev/xMo/src
 
 # clone packages
-git clone https://github.com/kry0sc0pic/svan_simple_control.git
-git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.
+git clone https://github.com/orionop/svan_simple_control.git
+git clone https://github.com/orionop/svan_simple_control_msgs.git
 
 # add to build script
 cd ~/dev/xMo
@@ -44,7 +78,7 @@ catkin build svan_simple_control
 source devel/setup.bash
 ```
 
-## running (simulation)
+## Running (simulation)
 after starting the gazebo simulation launch file and the mcp.py file. run the following in a third terminal
 
 ```bash
@@ -60,7 +94,7 @@ source devel/setup.bash
 python3 src/svan_simple_control/examples/<script>.py
 ```
 
-### running (hardware)
+### Running (hardware)
 after completing all the startup steps (joystick calibration, sleep calibration, moetus interface launch and starting the `mcp.py`). run the following commands in two ssh sessions on the SVAN.
 
 _in the first ssh session_
@@ -77,8 +111,8 @@ source devel/setup.bash
 python3 src/svan_simple_control/examples/<script>.py
 ``` 
 
-## message definitions
-these are the following variables you can give as part of the `SvanCommand` message. You can view the source [here](https://github.com/kry0sc0pic/svan_simple_control_msgs)
+## Message definitions
+these are the following variables you can give as part of the `SvanCommand` message. You can view the source [here](https://github.com/orionop/svan_simple_control_msgs)
 
 0. `command_type` (`uint8`) - what aspect you want to control
 
