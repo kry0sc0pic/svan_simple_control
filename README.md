@@ -18,6 +18,9 @@ catkin init
 # Clone the repositories
 cd ~/catkin_ws/src
 git clone https://github.com/orionop/svan_simple_control.git
+git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.git
+
+
 # For the messages package, contact repo maintainer for correct URL
 
 # Install dependencies
