@@ -1,4 +1,13 @@
 fastapi>=0.95.0
 uvicorn>=0.22.0
 pydantic>=2.0.0
-requests>=2.28.0 
+requests>=2.28.0
+PyYAML>=6.0
+rospkg>=1.6.0
+catkin_pkg>=1.0.0
+# Dependencies for ROS Python integration
+distro>=1.9.0
+pyparsing>=3.1.4
+python-dateutil>=2.9.0
+docutils>=0.20.1
+six>=1.17.0 

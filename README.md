@@ -32,6 +32,79 @@ source devel/setup.bash
 # Optional: Add to your .bashrc for convenience
 echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 source ~/.bashrc
+
+# If using a virtual environment for the bridge (bridge_venv)
+# Install required Python packages
+pip install pyyaml
+```
+
+### Running the Bridge
+If you're using a virtual environment for the bridge, ensure all dependencies are installed:
+```bash
+# Create and activate a virtual environment (if not already done)
+python3 -m venv bridge_venv
+source bridge_venv/bin/activate
+
+# Install required packages for ROS Python integration
+# Option 1: Install packages individually
+pip install pyyaml
+pip install rospkg
+pip install catkin-pkg
+
+# Option 2: Install from requirements.txt (recommended)
+pip install -r bridge/requirements.txt
+
+# Start ROS Master (roscore) in a separate terminal
+# This is required before running any ROS nodes
+roscore
+
+# In a new terminal, run the bridge
+source bridge_venv/bin/activate
+python3 bridge/bridge.py
+```
+
+If you see "Unable to register with master node [http://localhost:11311]", it means roscore is not running. You need to:
+
+1. Open a new terminal and run the following command:
+   ```bash
+   roscore
+   ```
+
+2. Leave this terminal running with roscore active
+
+3. Return to your bridge terminal and restart the bridge
+
+### ROS Environment Setup
+
+The SVAN control system uses the ROS (Robot Operating System) framework. Here's how the different components work together:
+
+1. **roscore**: This is the ROS master server that allows nodes to find and talk to each other. It must be running before any other ROS components.
+
+2. **bridge.py**: This creates a bridge between HTTP requests and ROS messages, allowing you to control the robot via web APIs.
+
+3. **Gazebo Simulation**: If you're using the simulation mode, you need to run the Gazebo simulation launch file in one terminal before running other components.
+
+4. **mcp.py**: This is the main control program that interfaces with the robot hardware or simulation.
+
+For simulation mode, you should follow this order:
+```bash
+# Terminal 1: Start roscore
+roscore
+
+# Terminal 2: Start the Gazebo simulation
+# (Follow your simulation launch instructions)
+
+# Terminal 3: Start the mcp.py interface
+cd ~/xMo
+source devel/setup.bash
+rosrun svan_simple_control mcp.py  # Or the correct path to your mcp.py
+
+# Terminal 4: Run the bridge (in virtual environment)
+source bridge_venv/bin/activate
+python3 bridge/bridge.py
+
+# Terminal 5: Run your control scripts or examples
+python3 src/svan_simple_control/examples/<script>.py
 ```
 
 ### Setup (simulation)
