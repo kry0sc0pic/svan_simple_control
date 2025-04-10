@@ -2,6 +2,44 @@
 
 This package provides a simple control interface for the SVAN robot, allowing you to control movement, orientation, and operational modes using ROS messages or HTTP API.
 
+## Setup Instructions
+
+### Initial Setup
+
+```bash
+# Navigate to your ROS workspace source directory
+cd ~/xMo/src
+
+# Clone the main control repository
+git clone https://github.com/kry0sc0pic/svan_simple_control.git
+
+# Clone the messages repository (required for the message definitions)
+git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.git
+
+# Build the packages
+cd ~/xMo
+catkin build svan_simple_control_msgs
+source devel/setup.bash
+catkin build svan_simple_control
+source devel/setup.bash
+```
+
+### Setting up the HTTP Bridge
+
+```bash
+# Navigate to the svan_simple_control directory
+cd ~/xMo/src/svan_simple_control
+
+# Create the virtual environment
+python3 -m venv bridge_venv
+
+# Activate the virtual environment
+source bridge_venv/bin/activate
+
+# Install the required packages
+pip install -r bridge/requirements.txt
+```
+
 ## System Architecture
 
 The SVAN control system has the following components:
@@ -18,72 +56,106 @@ The SVAN control system has the following components:
 
 5. **HTTP Bridge**: An API gateway that allows controlling the robot via web requests instead of direct ROS messages.
 
-## Running in Simulation Mode
+## Running SVAN Simulation
+
+Open two terminals, navigate to the `xMo` folder in both and run the following command on both:
 
 ```bash
-# Terminal 1: Start the Gazebo simulation
-# This depends on your specific Gazebo launch file
-
-# Terminal 2: Start the MCP interface
-cd ~/xMo
 source devel/setup.bash
+```
+
+### Terminal 1:
+
+*This launches the Gazebo simulation and the keyboard control interface.*
+
+```bash
+roslaunch svan_bringup gazebo_sim.launch
+```
+
+### Terminal 2:
+
+*This launches the motor controller node which converts keyboard control inputs into commands for the simulated SVAN M2*
+
+```bash
+python3 src/svan_control/src/mcp.py
+```
+
+## Running the Complete System with HTTP Bridge
+
+You'll need 6 terminals to run the complete system:
+
+### Terminal 1: ROS Core
+```bash
+# Start ROS Core
+roscore
+```
+
+### Terminal 2: Gazebo Simulation (for simulation mode only)
+```bash
+# If using simulation, start Gazebo
+# This depends on your specific launch file
+# Example (may vary based on your setup):
+roslaunch svan_gazebo svan.launch
+```
+
+### Terminal 3: MCP Interface
+```bash
+# Navigate to your workspace
+cd ~/xMo
+
+# Source the ROS environment
+source devel/setup.bash
+
+# Run the MCP program
 rosrun svan_simple_control mcp.py
+```
 
-# Terminal 3: Run the simple control node
+### Terminal 4: Simple Control Node
+```bash
+# Navigate to your workspace
 cd ~/xMo
+
+# Source the ROS environment
 source devel/setup.bash
+
+# For simulation:
 rosrun svan_simple_control simulation.py
 
-# Terminal 4: Run your control scripts or examples
-cd ~/xMo
-source devel/setup.bash
-python3 src/svan_simple_control/examples/<script>.py
+# OR for hardware:
+# rosrun svan_simple_control hardware.py
 ```
 
-## Running in Hardware Mode
-
+### Terminal 5: HTTP Bridge
 ```bash
-# Complete all hardware startup steps first
-# (joystick calibration, sleep calibration, moetus interface launch)
+# Navigate to the svan_simple_control directory
+cd ~/xMo/src/svan_simple_control
 
-# Terminal 1: Start the MCP program
-cd ~/dev/xMo
-source devel/setup.bash
-python3 mcp.py
-
-# Terminal 2: Run the hardware interface
-cd ~/dev/xMo
-source devel/setup.bash
-rosrun svan_simple_control hardware.py
-
-# Terminal 3: Run your control script
-cd ~/dev/xMo
-source devel/setup.bash
-python3 src/svan_simple_control/examples/<script>.py
-```
-
-## Using the HTTP Bridge
-
-The HTTP bridge provides a REST API to control the SVAN robot using HTTP requests instead of direct ROS messages.
-
-### Setup and Running
-
-```bash
-# Create and activate a virtual environment
-python3 -m venv bridge_venv
+# Activate the virtual environment
 source bridge_venv/bin/activate
 
-# Install required packages
-pip install -r bridge/requirements.txt
+# Source the ROS environment (IMPORTANT: do this AFTER activating the virtual environment)
+source ~/xMo/devel/setup.bash
 
 # Start the bridge
 python3 bridge/bridge.py
 ```
 
-The bridge will start on port 8888. You can access:
-- API endpoints at `http://127.0.0.1:8888/`
-- Interactive API documentation at `http://127.0.0.1:8888/docs`
-- Command history at `http://127.0.0.1:8888/history`
+### Terminal 6: Run Control Scripts
+```bash
+# For HTTP-based examples:
+cd ~/xMo/src/svan_simple_control
+source bridge_venv/bin/activate
+python3 bridge/examples/pushup_http.py
+
+# OR for direct ROS examples:
+cd ~/xMo
+source devel/setup.bash
+python3 src/svan_simple_control/examples/pushup.py
+```
+
+## Using the HTTP Bridge
+
+The HTTP bridge provides a REST API to control the SVAN robot using HTTP requests instead of direct ROS messages.
 
 ### API Endpoints
 
@@ -114,7 +186,7 @@ The bridge comes with example scripts to demonstrate HTTP-based control:
 - `bridge/example_client.py` - General example of sequential commands
 - `bridge/examples/pushup_http.py` - HTTP-based pushup demonstration
 
-For detailed instructions on using the HTTP bridge, see the [bridge/README.md](bridge/README.md) file.
+For detailed setup and running instructions, see the [bridge/README.md](bridge/README.md) file.
 
 ## Message Definitions
 
@@ -171,4 +243,31 @@ The package includes several example scripts:
 ### HTTP Bridge Examples
 - `bridge/examples/pushup_http.py` - Same pushup demonstration but using HTTP requests
 
-For detailed instructions on using the HTTP bridge and its examples, see the [bridge/examples/README.md](bridge/examples/README.md) file.
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### "No module named 'svan_simple_control_msgs'"
+This means the ROS environment isn't properly sourced in your virtual environment. Fix it by:
+```bash
+# Make sure you source the ROS workspace AFTER activating the virtual environment
+source bridge_venv/bin/activate
+source ~/xMo/devel/setup.bash
+```
+
+#### "Unable to register with master node"
+This means ROS core isn't running. Start it in a separate terminal:
+```bash
+roscore
+```
+
+#### "Connection refused" when accessing the API
+This means the bridge isn't running or is using a different port. Make sure:
+1. The bridge is running (Terminal 5)
+2. You're using the correct URL (http://127.0.0.1:8888)
+
+#### Commands not reaching the robot
+1. Check if all terminals are running correctly
+2. Verify the bridge is not in mock mode (check the startup message)
+3. Check the command history at `/history` to verify your commands are being received
+4. For detailed logs, check the output in all terminal windows
