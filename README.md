@@ -29,7 +29,7 @@ cd ~/dev/xMo/src
 
 # clone packages
 git clone https://github.com/kry0sc0pic/svan_simple_control.git
-git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.
+git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.git
 
 # add to build script
 cd ~/dev/xMo
@@ -44,7 +44,7 @@ catkin build svan_simple_control
 source devel/setup.bash
 
 # (optional) install dependencies for http bridge
-pip install -r bridge-requirements.txt
+pip install -r src/svan_simple_control/bridge-requirements.txt
 ```
 
 ## running (simulation)
