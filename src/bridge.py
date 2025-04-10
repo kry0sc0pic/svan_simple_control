@@ -187,10 +187,9 @@ async def set_height(request: HeightRequest):
 
 if __name__ == "__main__":
     print("Starting SVAN Control Bridge")
-    port = 8888
-    print(f"Access the API at http://127.0.0.1:{port}")
-    print(f"Access the docs at http://127.0.0.1:{port}/docs")
-    print(f"View command history at http://127.0.0.1:{port}/history")
+    print(f"Access the API at http://0.0.0.0:8888")
+    print(f"Access the docs at http://0.0.0.0:8888/docs")
+    print(f"View command history at http://0.0.0.0:888/history")
     if not ros_connected:
         print("WARNING: Running in MOCK MODE - commands will not be sent to ROS")
-    uvicorn.run(app, host="127.0.0.1", port=port) 
+    uvicorn.run(app, host="0.0.0.0", port=8888) 

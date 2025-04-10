@@ -1,253 +1,212 @@
-# SVAN Simple Control
+# svan_simple_control
 
-This package provides a simple control interface for the SVAN robot, allowing you to control movement, orientation, and operational modes using ROS messages or HTTP API.
-
-## Setup Instructions
-
-### Initial Setup
-
+## setup (simulation)
 ```bash
-# Navigate to your ROS workspace source directory
+# cd into workspace
 cd ~/xMo/src
 
-# Clone the main control repository
+# clone packages
 git clone https://github.com/kry0sc0pic/svan_simple_control.git
+git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.
 
-# Clone the messages repository (required for the message definitions)
-git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.git
-
-# Build the packages
+# add to build script
 cd ~/xMo
+echo "catkin build svan_simple_control_msgs" >> svan_build.sh
+echo "source devel/setup.bash" >> svan_build.sh
+echo "catkin build svan_simple_control" >> svan_build.sh
+echo "source devel/setup.bash" >> svan_build.sh
+
+# build packages
 catkin build svan_simple_control_msgs
-source devel/setup.bash
 catkin build svan_simple_control
 source devel/setup.bash
 ```
 
-### Setting up the HTTP Bridge
-
+## setup (hardware)
 ```bash
-# Navigate to the svan_simple_control directory
-cd ~/xMo/src/svan_simple_control
+# cd into workspace
+cd ~/dev/xMo/src
 
-# Create the virtual environment
-python3 -m venv bridge_venv
+# clone packages
+git clone https://github.com/kry0sc0pic/svan_simple_control.git
+git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.
 
-# Activate the virtual environment
-source bridge_venv/bin/activate
+# add to build script
+cd ~/dev/xMo
+echo "catkin build svan_simple_control_msgs" >> svan_build.sh
+echo "source devel/setup.bash" >> svan_build.sh
+echo "catkin build svan_simple_control" >> svan_build.sh
+echo "source devel/setup.bash" >> svan_build.sh
 
-# Install the required packages
-pip install -r bridge/requirements.txt
-```
-
-## System Architecture
-
-The SVAN control system has the following components:
-
-1. **ROS Core (roscore)**: The ROS master that allows all nodes to communicate.
-
-2. **Simulation or Hardware Interface**: Either:
-   - Gazebo simulation for testing in a virtual environment
-   - Hardware interface when working with the physical robot
-
-3. **MCP (Master Control Program)**: Interfaces between the high-level commands and the robot.
-
-4. **Simple Control Node**: Translates simplified commands into low-level control signals.
-
-5. **HTTP Bridge**: An API gateway that allows controlling the robot via web requests instead of direct ROS messages.
-
-## Running the Complete System with HTTP Bridge
-
-You'll need 6 terminals to run the complete system:
-
-### Terminal 1: ROS Core
-```bash
-# Start ROS Core
-roscore
-```
-
-### Terminal 2: Gazebo Simulation (for simulation mode only)
-```bash
-# Navigate to your workspace
-cd ~/xMo
-
-# Source the ROS environment
+# build packages
+catkin build svan_simple_control_msgs
+catkin build svan_simple_control
 source devel/setup.bash
 
-# Launch gazebo
-roslaunch svan_bringup gazebo_sim.launch
+# (optional) install dependencies for http bridge
+pip install -r bridge-requirements.txt
 ```
 
-### Terminal 3: MCP Interface
+## running (simulation)
+after starting the gazebo simulation launch file and the mcp.py file. run the following in a third terminal
+
 ```bash
-# Navigate to your workspace
-cd ~/xMo
-
-# Source the ROS environment
-source devel/setup.bash
-
-# Run the MCP program
-python3 src/svan_control/src/mcp.py
-```
-
-### Terminal 4: Simple Control Node
-```bash
-# Navigate to your workspace
-cd ~/xMo
-
-# Source the ROS environment
-source devel/setup.bash
-
-# For simulation:
-rosrun svan_simple_control sim.py
-
-# OR for hardware:
-# rosrun svan_simple_control hardware.py
-```
-
-### Terminal 5: HTTP Bridge
-```bash
-# Navigate to the svan_simple_control directory
-cd ~/xMo/src/svan_simple_control
-
-# Activate the virtual environment
-source bridge_venv/bin/activate
-
-# Source the ROS environment (IMPORTANT: do this AFTER activating the virtual environment)
-source ~/xMo/devel/setup.bash
-
-# Start the bridge
-python3 bridge/bridge.py
-```
-
-### Terminal 6: Run Control Scripts
-```bash
-# For HTTP-based examples:
-cd ~/xMo/src/svan_simple_control
-source bridge_venv/bin/activate
-python3 bridge/examples/<http_script>.py
-
-# OR for direct ROS examples:
 cd ~/xMo
 source devel/setup.bash
-python3 src/svan_simple_control/examples/<python_script>.py
+rosrun svan_simple_control simulation.py
 ```
 
-## Using the HTTP Bridge
-
-The HTTP bridge provides a REST API to control the SVAN robot using HTTP requests instead of direct ROS messages.
-
-### API Endpoints
-
-- `GET /` - Check if the bridge is running
-- `GET /history` - View command history 
-- `POST /mode` - Set operation mode
-- `POST /movement` - Control linear movement
-- `POST /roll` - Control roll angle
-- `POST /pitch` - Control pitch angle
-- `POST /yaw` - Control yaw direction
-- `POST /height` - Control height
-
-### Example Usage
-
+_now open 4th terminal are run your script. replace `<script>` with the filename of the example you want to run._
 ```bash
-# Set to TROT mode
-curl -X POST http://127.0.0.1:8888/mode \
-  -H "Content-Type: application/json" \
-  -d '{"operation_mode": 4}'
-
-# Move forward at half speed
-curl -X POST http://127.0.0.1:8888/movement \
-  -H "Content-Type: application/json" \
-  -d '{"vel_x": 0.0, "vel_y": 0.5}'
+cd ~/xMo
+source devel/setup.bash
+python3 src/svan_simple_control/examples/<script>.py
 ```
 
-The bridge comes with example scripts to demonstrate HTTP-based control:
-- `bridge/example_client.py` - General example of sequential commands
-- `bridge/examples/pushup_http.py` - HTTP-based pushup demonstration
+### running (hardware) (without bridge)
 
-For detailed setup and running instructions, see the [bridge/README.md](bridge/README.md) file.
+> if you are having issues subscribing and publishing to SVAN ros topics from a desktop/laptop. Have a look at the HTTP bridge below.
 
-## Message Definitions
+after completing all the startup steps (joystick calibration, sleep calibration, moetus interface launch and starting the `mcp.py`). run the following commands in two ssh sessions on the SVAN.
 
-SVAN is controlled using the `SvanCommand` message type with the following fields:
-
-### `command_type` (`uint8`)
-Specifies what aspect of the robot you want to control:
-
-| Value | Aspect |
-| ----- | ------ |
-| 0 | OPERATION MODE (trot, push, up, etc.) |
-| 1 | LINEAR MOVEMENT |
-| 2 | ROLL ANGLE |
-| 3 | PITCH ANGLE | 
-| 4 | YAW VELOCITY |
-| 5 | HEIGHT |
-
-### `operation_mode` (`uint8`)
-Used when `command_type` is `0` to set the robot's operation mode:
-
-| Value | Mode |
-| ----- | ---- |
-| 1 | STOP |
-| 2 | TWIRL |
-| 3 | PUSHUP |
-| 4 | TROT |
-| 5 | SLEEP |
-
-### `height` (`uint8`)
-Used when `command_type` is `5` to set the robot's height:
-
-| Value | Height |
-| ----- | ------ |
-| 1 | UP (MAX) |
-| 2 | DOWN (MIN) |
-
-### Movement Control
-- `vel_x` (`float32`): Normalized velocity along X-axis (-1.0 to 1.0). Positive X is to the right.
-- `vel_y` (`float32`): Normalized velocity along Y-axis (-1.0 to 1.0). Positive Y is to the front.
-
-### Orientation Control
-- `roll` (`float32`): Normalized roll angle (-1.0 = left, 0 = center, 1.0 = right)
-- `pitch` (`float32`): Normalized pitch angle (1.0 = front, 0 = center, -1.0 = back)
-- `yaw` (`uint8`): Yaw direction (0 = LEFT, 1 = RIGHT, 2 = NONE)
-
-## Examples
-
-The package includes several example scripts:
-
-### Direct ROS Examples
-- `examples/pushup.py` - Demonstration of robot pushup mode using direct ROS messages
-- `examples/rotate.py` - Demonstration of robot rotation control using direct ROS messages
-
-### HTTP Bridge Examples
-- `bridge/examples/pushup_http.py` - Same pushup demonstration but using HTTP requests
-
-## Troubleshooting
-
-### Common Issues and Solutions
-
-#### "No module named 'svan_simple_control_msgs'"
-This means the ROS environment isn't properly sourced in your virtual environment. Fix it by:
+_in the first ssh session_
 ```bash
-# Make sure you source the ROS workspace AFTER activating the virtual environment
-source bridge_venv/bin/activate
-source ~/xMo/devel/setup.bash
+cd ~/dev/xMo
+source devel/setup.bash
+rosrun svan_simple_control hardware.py
 ```
 
-#### "Unable to register with master node"
-This means ROS core isn't running. Start it in a separate terminal:
+_in the second ssh session_
 ```bash
-roscore
+cd ~/dev/xMo
+source devel/setup.bash
+python3 src/svan_simple_control/examples/<script>.py
+``` 
+
+### running (hardware) (with bridge)
+
+after completing all the startup steps (joystick calibration, sleep calibration, moetus interface launch and starting the `mcp.py`). run the following commands in two ssh sessions on the SVAN.
+
+_in the first ssh session_
+```bash
+cd ~/dev/xMo
+source devel/setup.bash
+rosrun svan_simple_control hardware.py
 ```
 
-#### "Connection refused" when accessing the API
-This means the bridge isn't running or is using a different port. Make sure:
-1. The bridge is running (Terminal 5)
-2. You're using the correct URL (http://127.0.0.1:8888)
+_in the second ssh session_
+```bash
+cd ~/dev/xMo
+source devel/setup.bash
+rosrun svan_simple_control bridge.py
+``` 
 
-#### Commands not reaching the robot
-1. Check if all terminals are running correctly
-2. Verify the bridge is not in mock mode (check the startup message)
-3. Check the command history at `/history` to verify your commands are being received
-4. For detailed logs, check the output in all terminal windows
+## bridge
+The HTTP bridge allows sending commands to the SVAN using POST requests to remove the dependency for the client machine or work around ROS connection issues.
+
+The documentation can be accessed by running the bridge with `rosrun svan_simple_control bridge.py` and navigating to `/docs` in a web browser. The parameter names correspond to the [ROS Message Definition](https://github.com/kry0sc0pic/svan_simple_control_msgs) below.
+
+
+## message definitions
+these are the following variables you can give as part of the `SvanCommand` message. You can view the source [here](https://github.com/kry0sc0pic/svan_simple_control_msgs)
+
+0. `command_type` (`uint8`) - what aspect you want to control
+
+    | value | aspect |
+    | ---- | --- |
+    | 0 | OPERATION MODE (trot, push, up, etc.) |
+    | 1 | LINEAR MOVEMENT |
+    | 2 | ROLL ANGLE |
+    | 3 | PITCH ANGLE | 
+    | 4 | YAW VELOCITY |
+    | 5 | HEIGHT |
+
+1. `operation_mode` (`uint8`) - operation mode to switch to. used when `command_type` is `0`.
+
+    | value | mode |
+    | --- | --- |
+    | 1 | STOP |
+    | 2 | TWIRL |
+    | 3 | PUSHUP |
+    | 4 | TROT |
+    | 5 | SLEEP |
+
+
+2. `height` (`uint8`) - height profile to set. used when `command_type` is `5`.
+
+    | value | height |
+    | --- | --- |
+    | 1 | UP (MAX) |
+    | 2 | DOWN (MIN) |
+
+    _granular height control is being actively developled_
+
+3. `vel_x` (`float32`) (`-1.0` - `1.0`) - normalised value of velocity in x-axis. postive x-axis is the right of the robot.
+
+4. `vel_y` (`float32`) (`-1.0` - `1.0`) - normalised value of velcity in y-axis. positive y-axis is the front of the robot.
+
+5. `roll` (`float32`) - normalised roll angle. used when `command_type` is `2`.
+
+    | value | roll angle |
+    | --- | --- |
+    | -1 | LEFT |
+    | 0 | CENTER |
+    | 1 | RIGHT |
+
+6. `pitch` (`float32`) - normalised pitch angle. used when command_type is `3`.
+
+    | value | roll angle |
+    | --- | --- |
+    | 1 | FRONT |
+    | 0 | CENTER |
+    | -1 | BACK |
+
+7. `yaw` (`uint8`) - yaw direction. used when command_type is `4`.
+
+    | value | direction |
+    | --- | --- |
+    | 0 | LEFT |
+    | 1 | RIGHT |
+    | 2 | NONE |
+
+
+
+## examples
+*bridge versions of certain examples are also available. They can be identified with the `bridge` suffix in the name. They should be used with the HTTP bridge.*
+
+
+### rotate
+svan rotates around Z-axis.
+
+source: `examples/rotate.py`
+
+### pushup and twirl
+svan rotates around Z-axis.
+
+source: `examples/pushup_twirl.py`
+
+
+
+## examples (deprecated)
+
+### sine wave circle
+
+moves in a circular path while varying height.
+
+source: `examples/deprecated/sine_wave_circle.py`
+
+### hand gesture movement control
+
+author: [Atharv Nawale]()
+
+move and stop the svan using hand gestures. powered by mediapipe.
+
+source: `examples/deprecated/hand_control.py`
+
+### hand gesture height control
+
+author: [Dhruv Shah]()
+
+control the svan's height using gestures. powered by mediapipe.
+
+source: `examples/deprecated/height_control.py`
