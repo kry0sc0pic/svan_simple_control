@@ -95,7 +95,7 @@ roscore
 # If using simulation, start Gazebo
 # This depends on your specific launch file
 # Example (may vary based on your setup):
-roslaunch svan_gazebo svan.launch
+roslaunch svan_bringup gazebo_sim.launch
 ```
 
 ### Terminal 3: MCP Interface
@@ -107,7 +107,7 @@ cd ~/xMo
 source devel/setup.bash
 
 # Run the MCP program
-rosrun svan_simple_control mcp.py
+python3 src/svan_control/src/mcp.py
 ```
 
 ### Terminal 4: Simple Control Node
@@ -119,7 +119,7 @@ cd ~/xMo
 source devel/setup.bash
 
 # For simulation:
-rosrun svan_simple_control simulation.py
+rosrun svan_simple_control sim.py
 
 # OR for hardware:
 # rosrun svan_simple_control hardware.py
