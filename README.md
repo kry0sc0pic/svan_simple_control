@@ -7,7 +7,7 @@ cd ~/xMo/src
 
 # clone packages
 git clone https://github.com/kry0sc0pic/svan_simple_control.git
-git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.
+git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.git
 
 # add to build script
 cd ~/xMo
