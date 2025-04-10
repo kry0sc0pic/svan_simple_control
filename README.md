@@ -7,7 +7,7 @@ cd ~/xMo/src
 
 # clone packages
 git clone https://github.com/kry0sc0pic/svan_simple_control.git
-git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.
+git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.git
 
 # add to build script
 cd ~/xMo
@@ -42,6 +42,9 @@ echo "source devel/setup.bash" >> svan_build.sh
 catkin build svan_simple_control_msgs
 catkin build svan_simple_control
 source devel/setup.bash
+
+# (optional) install dependencies for http bridge
+pip install -r bridge-requirements.txt
 ```
 
 ## running (simulation)
@@ -60,7 +63,10 @@ source devel/setup.bash
 python3 src/svan_simple_control/examples/<script>.py
 ```
 
-### running (hardware)
+### running (hardware) (without bridge)
+
+> if you are having issues subscribing and publishing to SVAN ros topics from a desktop/laptop. Have a look at the HTTP bridge below.
+
 after completing all the startup steps (joystick calibration, sleep calibration, moetus interface launch and starting the `mcp.py`). run the following commands in two ssh sessions on the SVAN.
 
 _in the first ssh session_
@@ -76,6 +82,30 @@ cd ~/dev/xMo
 source devel/setup.bash
 python3 src/svan_simple_control/examples/<script>.py
 ``` 
+
+### running (hardware) (with bridge)
+
+after completing all the startup steps (joystick calibration, sleep calibration, moetus interface launch and starting the `mcp.py`). run the following commands in two ssh sessions on the SVAN.
+
+_in the first ssh session_
+```bash
+cd ~/dev/xMo
+source devel/setup.bash
+rosrun svan_simple_control hardware.py
+```
+
+_in the second ssh session_
+```bash
+cd ~/dev/xMo
+source devel/setup.bash
+rosrun svan_simple_control bridge.py
+``` 
+
+## bridge
+The HTTP bridge allows sending commands to the SVAN using POST requests to remove the dependency for the client machine or work around ROS connection issues.
+
+The documentation can be accessed by running the bridge with `rosrun svan_simple_control bridge.py` and navigating to `/docs` in a web browser. The parameter names correspond to the [ROS Message Definition](https://github.com/kry0sc0pic/svan_simple_control_msgs) below.
+
 
 ## message definitions
 these are the following variables you can give as part of the `SvanCommand` message. You can view the source [here](https://github.com/kry0sc0pic/svan_simple_control_msgs)
@@ -100,10 +130,6 @@ these are the following variables you can give as part of the `SvanCommand` mess
     | 3 | PUSHUP |
     | 4 | TROT |
     | 5 | SLEEP |
-
-
-
-
 
 
 2. `height` (`uint8`) - height profile to set. used when `command_type` is `5`.
@@ -144,15 +170,30 @@ these are the following variables you can give as part of the `SvanCommand` mess
     | 2 | NONE |
 
 
-//TODO: update examples
 
 ## examples
+*bridge versions of certain examples are also available. They can be identified with the `bridge` suffix in the name. They should be used with the HTTP bridge.*
+
+
+### rotate
+svan rotates around Z-axis.
+
+source: `examples/rotate.py`
+
+### pushup and twirl
+svan rotates around Z-axis.
+
+source: `examples/pushup_twirl.py`
+
+
+
+## examples (deprecated)
 
 ### sine wave circle
 
 moves in a circular path while varying height.
 
-source: `examples/sine_wave_circle.py`
+source: `examples/deprecated/sine_wave_circle.py`
 
 ### hand gesture movement control
 
@@ -160,7 +201,7 @@ author: [Atharv Nawale]()
 
 move and stop the svan using hand gestures. powered by mediapipe.
 
-source: `examples/hand_control.py`
+source: `examples/deprecated/hand_control.py`
 
 ### hand gesture height control
 
@@ -168,4 +209,4 @@ author: [Dhruv Shah]()
 
 control the svan's height using gestures. powered by mediapipe.
 
-source: `examples/height_control.py`
+source: `examples/deprecated/height_control.py`
