@@ -1,42 +1,8 @@
-# svan_simple_control
+# SVAN Simple Control
 
 This package provides a simple control interface for the SVAN robot, allowing you to control movement, orientation, and operational modes using ROS messages or HTTP API.
 
-## Setup Instructions
-
-### Ubuntu Setup
-```bash
-# Install ROS dependencies (if not already installed)
-sudo apt update
-sudo apt install -y python3-catkin-tools python3-rosdep ros-noetic-catkin python3-venv
-
-# Create and initialize workspace (if you don't have one already)
-mkdir -p ~/catkin_ws/src
-cd ~/catkin_ws
-catkin init
-
-# Clone the repositories
-cd ~/catkin_ws/src
-git clone https://github.com/orionop/svan_simple_control.git
-# For the messages package, contact repo maintainer for correct URL
-
-# Install dependencies
-cd ~/catkin_ws
-rosdep update
-rosdep install --from-paths src --ignore-src -r -y
-
-# Build the packages
-catkin build svan_simple_control_msgs
-source devel/setup.bash
-catkin build svan_simple_control
-source devel/setup.bash
-
-# Optional: Add to your .bashrc for convenience
-echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
-source ~/.bashrc
-```
-
-## Understanding the System Architecture
+## System Architecture
 
 The SVAN control system has the following components:
 
@@ -50,67 +16,31 @@ The SVAN control system has the following components:
 
 4. **Simple Control Node**: Translates simplified commands into low-level control signals.
 
-5. **Bridge (Optional)**: An HTTP API gateway that allows controlling the robot via web requests instead of direct ROS messages.
-
-## Running the Bridge
-
-The bridge provides a REST API to control the robot using HTTP requests instead of directly using ROS messages.
-
-```bash
-# Create and activate a virtual environment
-python3 -m venv bridge_venv
-source bridge_venv/bin/activate
-
-# Install required packages
-pip install -r bridge/requirements.txt
-
-# Start ROS Core in a separate terminal
-roscore
-
-# In a new terminal, run the bridge
-source bridge_venv/bin/activate
-python3 bridge/bridge.py
-```
-
-Once running, you can access the API documentation at: http://127.0.0.1:8888/docs
-
-If you see "Unable to register with master node [http://localhost:11311]", it means roscore is not running. You need to:
-
-1. Start roscore in a separate terminal: `roscore`
-2. Leave that terminal running
-3. Return to your bridge terminal and restart the bridge
+5. **HTTP Bridge**: An API gateway that allows controlling the robot via web requests instead of direct ROS messages.
 
 ## Running in Simulation Mode
 
-To run the system in simulation mode, follow these steps in order:
-
 ```bash
-# Terminal 1: Start roscore (must be first)
-roscore
-
-# Terminal 2: Start the Gazebo simulation
+# Terminal 1: Start the Gazebo simulation
 # This depends on your specific Gazebo launch file
 
-# Terminal 3: Start the MCP interface
+# Terminal 2: Start the MCP interface
 cd ~/xMo
 source devel/setup.bash
-# Replace with your actual MCP path - this may be different in your setup
 rosrun svan_simple_control mcp.py
 
-# Terminal 4: Run the simple control node
+# Terminal 3: Run the simple control node
 cd ~/xMo
 source devel/setup.bash
 rosrun svan_simple_control simulation.py
 
-# Terminal 5: Run your control scripts or examples
+# Terminal 4: Run your control scripts or examples
 cd ~/xMo
 source devel/setup.bash
 python3 src/svan_simple_control/examples/<script>.py
 ```
 
 ## Running in Hardware Mode
-
-To run on the physical SVAN robot:
 
 ```bash
 # Complete all hardware startup steps first
@@ -119,7 +49,7 @@ To run on the physical SVAN robot:
 # Terminal 1: Start the MCP program
 cd ~/dev/xMo
 source devel/setup.bash
-python3 mcp.py  # Path may vary
+python3 mcp.py
 
 # Terminal 2: Run the hardware interface
 cd ~/dev/xMo
@@ -131,6 +61,60 @@ cd ~/dev/xMo
 source devel/setup.bash
 python3 src/svan_simple_control/examples/<script>.py
 ```
+
+## Using the HTTP Bridge
+
+The HTTP bridge provides a REST API to control the SVAN robot using HTTP requests instead of direct ROS messages.
+
+### Setup and Running
+
+```bash
+# Create and activate a virtual environment
+python3 -m venv bridge_venv
+source bridge_venv/bin/activate
+
+# Install required packages
+pip install -r bridge/requirements.txt
+
+# Start the bridge
+python3 bridge/bridge.py
+```
+
+The bridge will start on port 8888. You can access:
+- API endpoints at `http://127.0.0.1:8888/`
+- Interactive API documentation at `http://127.0.0.1:8888/docs`
+- Command history at `http://127.0.0.1:8888/history`
+
+### API Endpoints
+
+- `GET /` - Check if the bridge is running
+- `GET /history` - View command history 
+- `POST /mode` - Set operation mode
+- `POST /movement` - Control linear movement
+- `POST /roll` - Control roll angle
+- `POST /pitch` - Control pitch angle
+- `POST /yaw` - Control yaw direction
+- `POST /height` - Control height
+
+### Example Usage
+
+```bash
+# Set to TROT mode
+curl -X POST http://127.0.0.1:8888/mode \
+  -H "Content-Type: application/json" \
+  -d '{"operation_mode": 4}'
+
+# Move forward at half speed
+curl -X POST http://127.0.0.1:8888/movement \
+  -H "Content-Type: application/json" \
+  -d '{"vel_x": 0.0, "vel_y": 0.5}'
+```
+
+The bridge comes with example scripts to demonstrate HTTP-based control:
+- `bridge/example_client.py` - General example of sequential commands
+- `bridge/examples/pushup_http.py` - HTTP-based pushup demonstration
+
+For detailed instructions on using the HTTP bridge, see the [bridge/README.md](bridge/README.md) file.
 
 ## Message Definitions
 
@@ -180,20 +164,11 @@ Used when `command_type` is `5` to set the robot's height:
 
 The package includes several example scripts:
 
-### Sine Wave Circle
-Moves in a circular path while varying height.
-```bash
-python3 examples/sine_wave_circle.py
-```
+### Direct ROS Examples
+- `examples/pushup.py` - Demonstration of robot pushup mode using direct ROS messages
+- `examples/rotate.py` - Demonstration of robot rotation control using direct ROS messages
 
-### Hand Gesture Movement Control
-Move and stop the SVAN using hand gestures (requires MediaPipe).
-```bash
-python3 examples/hand_control.py
-```
+### HTTP Bridge Examples
+- `bridge/examples/pushup_http.py` - Same pushup demonstration but using HTTP requests
 
-### Hand Gesture Height Control
-Control the SVAN's height using gestures (requires MediaPipe).
-```bash
-python3 examples/height_control.py
-```
+For detailed instructions on using the HTTP bridge and its examples, see the [bridge/examples/README.md](bridge/examples/README.md) file.
