@@ -56,30 +56,6 @@ The SVAN control system has the following components:
 
 5. **HTTP Bridge**: An API gateway that allows controlling the robot via web requests instead of direct ROS messages.
 
-## Running SVAN Simulation
-
-Open two terminals, navigate to the `xMo` folder in both and run the following command on both:
-
-```bash
-source devel/setup.bash
-```
-
-### Terminal 1:
-
-*This launches the Gazebo simulation and the keyboard control interface.*
-
-```bash
-roslaunch svan_bringup gazebo_sim.launch
-```
-
-### Terminal 2:
-
-*This launches the motor controller node which converts keyboard control inputs into commands for the simulated SVAN M2*
-
-```bash
-python3 src/svan_control/src/mcp.py
-```
-
 ## Running the Complete System with HTTP Bridge
 
 You'll need 6 terminals to run the complete system:
