@@ -68,9 +68,13 @@ roscore
 
 ### Terminal 2: Gazebo Simulation (for simulation mode only)
 ```bash
-# If using simulation, start Gazebo
-# This depends on your specific launch file
-# Example (may vary based on your setup):
+# Navigate to your workspace
+cd ~/xMo
+
+# Source the ROS environment
+source devel/setup.bash
+
+# Launch gazebo
 roslaunch svan_bringup gazebo_sim.launch
 ```
 
@@ -121,12 +125,12 @@ python3 bridge/bridge.py
 # For HTTP-based examples:
 cd ~/xMo/src/svan_simple_control
 source bridge_venv/bin/activate
-python3 bridge/examples/pushup_http.py
+python3 bridge/examples/<http_script>.py
 
 # OR for direct ROS examples:
 cd ~/xMo
 source devel/setup.bash
-python3 src/svan_simple_control/examples/pushup.py
+python3 src/svan_simple_control/examples/<python_script>.py
 ```
 
 ## Using the HTTP Bridge
