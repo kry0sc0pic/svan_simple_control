@@ -10,6 +10,7 @@ command_publisher = rospy.Publisher('/svan/joystick_data',Float32MultiArray,queu
 current_operation_mode = SvanCommand.MODE_STOP
 current_joystick_data = Float32MultiArray()
 current_joystick_data.data = [0] * 9
+manual_override = False
 
 def constrain_value(value,minumum: float = -1.0,maximum: float = 1.0):
     return max(minumum, min(value, maximum))
@@ -39,7 +40,6 @@ def set_operation_mode(mode: int):
         current_operation_mode = SvanCommand.MODE_SLEEP
         current_joystick_data.data[0] = 6.0
 
-    command_publisher.publish(current_joystick_data)
 
 def set_velocity(vel_x: float = 0.0, vel_y: float = 0.0):
     global current_operation_mode, current_joystick_data
@@ -103,7 +103,16 @@ def set_height(state: int):
         command_publisher.publish(current_joystick_data)
 
 def handle_new_command(command: SvanCommand):
+    global manual_override
     rospy.loginfo(f"Recieved Command: {command}")
+
+    if command.command_type == SvanCommand.COMMAND_MANUAL_OVERRIDE and not manual_override:
+        rospy.logerr("Manual Override Triggered. Stopping command publishing.")
+        manual_override = True
+    
+    if manual_override:
+        rospy.logwarn("Manual Override Active. Ignoring command: " + str(command))
+        return
 
     # operation mode
     if command.command_type == SvanCommand.COMMAND_OPERATION_MODE:
