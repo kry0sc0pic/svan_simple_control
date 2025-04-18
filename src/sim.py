@@ -7,6 +7,7 @@ rospy.init_node('svan_simple_control_node')
 
 command_publisher = rospy.Publisher('/svan/io_interface',Float32MultiArray,queue_size=1)
 
+DISABLE_MANUAL_OVERRIDE = True
 
 def override_listener(msg: Float32MultiArray):
     global failsafe
@@ -149,7 +150,7 @@ def handle_new_command(command: SvanCommand):
         set_yaw(direction=command.yaw)
 
 rospy.Subscriber('/svan/simple_control',SvanCommand,handle_new_command)
-rospy.Subscriber('/svan/io_interface',Float32MultiArray,override_listener)
+if(not DISABLE_MANUAL_OVERRIDE): rospy.Subscriber('/svan/io_interface',Float32MultiArray,override_listener)
 
 if __name__ == '__main__':
     try:
