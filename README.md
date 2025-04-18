@@ -5,19 +5,14 @@
 # cd into workspace
 cd ~/xMo/src
 
-# clone packages
+# clone package
 git clone https://github.com/kry0sc0pic/svan_simple_control.git
-git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.git
-
 # add to build script
 cd ~/xMo
-echo "catkin build svan_simple_control_msgs" >> svan_build.sh
-echo "source devel/setup.bash" >> svan_build.sh
 echo "catkin build svan_simple_control" >> svan_build.sh
 echo "source devel/setup.bash" >> svan_build.sh
 
-# build packages
-catkin build svan_simple_control_msgs
+# build package
 catkin build svan_simple_control
 source devel/setup.bash
 ```
@@ -29,22 +24,19 @@ cd ~/dev/xMo/src
 
 # clone packages
 git clone https://github.com/kry0sc0pic/svan_simple_control.git
-git clone https://github.com/kry0sc0pic/svan_simple_control_msgs.git
 
 # add to build script
 cd ~/dev/xMo
-echo "catkin build svan_simple_control_msgs" >> svan_build.sh
-echo "source devel/setup.bash" >> svan_build.sh
 echo "catkin build svan_simple_control" >> svan_build.sh
 echo "source devel/setup.bash" >> svan_build.sh
 
 # build packages
-catkin build svan_simple_control_msgs
 catkin build svan_simple_control
 source devel/setup.bash
 
 # (optional) install dependencies for http bridge
-pip install -r src/svan_simple_control/bridge-requirements.txt
+python3 -m pip install --upgrade pip
+python3 -m pip install fastapi uvicorn pydantic
 ```
 
 ## running (simulation)
@@ -63,7 +55,20 @@ source devel/setup.bash
 python3 src/svan_simple_control/examples/<script>.py
 ```
 
-### running (hardware) (without bridge)
+---
+
+> ***🔴 Important Note***
+>
+> Always be ready to take manual control of the SVAN using the joystick incase something unexpected starts happening. 
+>
+> After the node starts, if some joystick data is published. It will cease sending commands until the node is restarted.
+> 
+> The simple control node differentiates between itself and the joystick command code by publishing a value of `1000.0` at index `7`. If the value is not `1000.0` (in case of the joystick command node) it ceases sending any recieved commands.
+>
+> Make this change to the source on your joystick commander node to prevent operating mode desync. --- [CHANGE HERE]
+
+
+## running (hardware) (without bridge)
 
 > if you are having issues subscribing and publishing to SVAN ros topics from a desktop/laptop. Have a look at the HTTP bridge below.
 
@@ -83,7 +88,7 @@ source devel/setup.bash
 python3 src/svan_simple_control/examples/<script>.py
 ``` 
 
-### running (hardware) (with bridge)
+## running (hardware) (with bridge)
 
 after completing all the startup steps (joystick calibration, sleep calibration, moetus interface launch and starting the `mcp.py`). run the following commands in two ssh sessions on the SVAN.
 
@@ -102,7 +107,7 @@ rosrun svan_simple_control bridge.py
 ``` 
 
 ## bridge
-The HTTP bridge allows sending commands to the SVAN using POST requests to remove the dependency for the client machine or work around ROS connection issues.
+The HTTP bridge allows sending commands to the SVAN using POST requests to remove the ros dependency for the client machine or work around ROS connection issues.
 
 The documentation can be accessed by running the bridge with `rosrun svan_simple_control bridge.py` and navigating to `/docs` in a web browser. The parameter names correspond to the [ROS Message Definition](https://github.com/kry0sc0pic/svan_simple_control_msgs) below.
 
