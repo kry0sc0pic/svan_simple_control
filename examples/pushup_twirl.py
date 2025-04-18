@@ -12,7 +12,6 @@ stop_cmd = SvanCommand()
 stop_cmd.command_type = SvanCommand.COMMAND_OPERATION_MODE
 stop_cmd.operation_mode = SvanCommand.MODE_STOP
 c_pub.publish(stop_cmd)
-# c_pub.publish(stop_cmd)
 
 rospy.sleep(2)
 
