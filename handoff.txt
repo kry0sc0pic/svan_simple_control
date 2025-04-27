@@ -1,0 +1,9 @@
+
+
+def state_sync_callback(command: SvanCommand):
+    if command.command_type == SvanCommand.COMMAND_OPERATION_MODE:
+        with joystick_data_lock:
+            joystick_data.data[0] = command.operation_mode
+            print("[SVAN SIMPLE CONTROL STATE SYNC] Operation Mode: ", command.operation_mode)
+
+rospy.Subscriber('/svan/simple_control', SvanCommand, state_sync_callback)

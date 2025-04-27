@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional
-from svan_simple_control_msgs.msg import SvanCommand
+from svan_simple_control.msg import SvanCommand
 
 # Initialize FastAPI app
 app = FastAPI(title="SVAN Control Bridge",

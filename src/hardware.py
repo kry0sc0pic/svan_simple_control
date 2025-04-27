@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from svan_simple_control_msgs.msg import SvanCommand
+from svan_simple_control.msg import SvanCommand
 from std_msgs.msg import Float32MultiArray
 import rospy
 
@@ -7,9 +7,19 @@ rospy.init_node('svan_simple_control_node')
 
 command_publisher = rospy.Publisher('/svan/joystick_data',Float32MultiArray,queue_size=1)
 
+
+def override_listener(msg: Float32MultiArray):
+    global failsafe
+    if msg.data[7] != 1000:
+        rospy.logerr("Manual Override")
+        failsafe = True
+        
+
+base_data = [0,0,0,0,0,0,0,1000,0]
 current_operation_mode = SvanCommand.MODE_STOP
 current_joystick_data = Float32MultiArray()
-current_joystick_data.data = [0] * 9
+current_joystick_data.data = base_data
+failsafe = False
 
 def constrain_value(value,minumum: float = -1.0,maximum: float = 1.0):
     return max(minumum, min(value, maximum))
@@ -17,7 +27,7 @@ def constrain_value(value,minumum: float = -1.0,maximum: float = 1.0):
 
 def set_operation_mode(mode: int):
     global current_operation_mode, current_joystick_data, command_publisher
-    current_joystick_data.data = [0] * 9
+    current_joystick_data.data = base_data
     if mode == SvanCommand.MODE_TROT:
         rospy.loginfo("Trot Mode")
         current_joystick_data.data[0] = 4.0
@@ -39,7 +49,6 @@ def set_operation_mode(mode: int):
         current_operation_mode = SvanCommand.MODE_SLEEP
         current_joystick_data.data[0] = 6.0
 
-    command_publisher.publish(current_joystick_data)
 
 def set_velocity(vel_x: float = 0.0, vel_y: float = 0.0):
     global current_operation_mode, current_joystick_data
@@ -103,7 +112,12 @@ def set_height(state: int):
         command_publisher.publish(current_joystick_data)
 
 def handle_new_command(command: SvanCommand):
-    rospy.loginfo(f"Recieved Command: {command}")
+    global failsafe
+    rospy.logdebug(f"Recieved Command: {command}")
+    
+    if failsafe:
+        rospy.logwarn("Failsafe Triggered. Ignoring command.")
+        return
 
     # operation mode
     if command.command_type == SvanCommand.COMMAND_OPERATION_MODE:
@@ -136,6 +150,7 @@ def handle_new_command(command: SvanCommand):
         set_yaw(direction=command.yaw)
 
 rospy.Subscriber('/svan/simple_control',SvanCommand,handle_new_command)
+rospy.Subscriber('/svan/joystick_data',Float32MultiArray,override_listener)
 
 if __name__ == '__main__':
     try:

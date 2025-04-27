@@ -1,0 +1,7 @@
+<?xml version='1.0'?>
+<launch>
+    <node name="svan_simple_control_node" pkg="svan_simple_control" type="hardware.py" />
+    <node name="svan_simple_control_override_listener" pkg="svan_simple_control" type="override_listener" />
+
+
+</launch>
