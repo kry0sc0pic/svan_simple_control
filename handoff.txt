@@ -1,4 +1,4 @@
-
+from svan_simple_control.msg import SvanCommand
 
 def state_sync_callback(command: SvanCommand):
     if command.command_type == SvanCommand.COMMAND_OPERATION_MODE:

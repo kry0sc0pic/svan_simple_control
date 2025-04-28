@@ -10,6 +10,10 @@ from svan_simple_control.msg import SvanCommand
 app = FastAPI(title="SVAN Control Bridge",
               description="HTTP API to control SVAN robot using ROS messages")
 
+def constrain_value(value,minimum: float = -1.0,maximum: float = 1.0):
+    return max(minimum, min(value, maximum))
+
+
 # Initialize ROS node
 try:
     rospy.init_node('svan_bridge_node', anonymous=True, disable_signals=True)
@@ -78,8 +82,8 @@ async def set_operation_mode(request: OperationModeRequest):
 
 @app.post("/movement")
 async def set_movement(request: MovementRequest):
-    vel_x = max(-1.0, min(1.0, request.vel_x))  # Constrain values
-    vel_y = max(-1.0, min(1.0, request.vel_y))
+    vel_x = constrain_value(request.vel_x)  # Constrain values
+    vel_y = constrain_value(request.vel_y)  # Constrain values
     
     cmd_data = {
         "command_type": "MOVEMENT",
@@ -103,7 +107,7 @@ async def set_movement(request: MovementRequest):
 
 @app.post("/roll")
 async def set_roll(request: RollRequest):
-    roll = max(-1.0, min(1.0, request.roll))
+    roll = constrain_value(request.roll)
     
     cmd_data = {
         "command_type": "ROLL",
@@ -125,7 +129,7 @@ async def set_roll(request: RollRequest):
 
 @app.post("/pitch")
 async def set_pitch(request: PitchRequest):
-    pitch = max(-1.0, min(1.0, request.pitch))
+    pitch = constrain_value(request.pitch)
     
     cmd_data = {
         "command_type": "PITCH",

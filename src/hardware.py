@@ -21,8 +21,8 @@ current_joystick_data = Float32MultiArray()
 current_joystick_data.data = base_data
 failsafe = False
 
-def constrain_value(value,minumum: float = -1.0,maximum: float = 1.0):
-    return max(minumum, min(value, maximum))
+def constrain_value(value,minimum: float = -1.0,maximum: float = 1.0):
+    return max(minimum, min(value, maximum))
 
 
 def set_operation_mode(mode: int):
@@ -48,6 +48,7 @@ def set_operation_mode(mode: int):
         rospy.loginfo("Sleep Mode")
         current_operation_mode = SvanCommand.MODE_SLEEP
         current_joystick_data.data[0] = 6.0
+    command_publisher.publish(current_joystick_data)
 
 
 def set_velocity(vel_x: float = 0.0, vel_y: float = 0.0):
@@ -61,7 +62,7 @@ def set_velocity(vel_x: float = 0.0, vel_y: float = 0.0):
         set_operation_mode(SvanCommand.MODE_TROT)
     
     vel_x = constrain_value(vel_x)
-    vel_y = constrain_value(vel_y)
+    vel_y = constrain_value(vel_y - 0.192) # 0.192 was experimentally obtained forward velocity when y value was 0
     
     current_joystick_data.data[1] = vel_x
     current_joystick_data.data[2] = vel_y
