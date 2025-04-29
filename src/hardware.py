@@ -7,6 +7,8 @@ rospy.init_node('svan_simple_control_node')
 
 command_publisher = rospy.Publisher('/svan/joystick_data',Float32MultiArray,queue_size=1)
 failsafe = False
+OFFSET_VELOCITY_Y = -0.192
+OFFSET_VELOCITY_X = 0
 
 def override_listener(msg: Float32MultiArray):
     global failsafe
@@ -48,7 +50,7 @@ def set_operation_mode(mode: int):
         rospy.loginfo("Sleep Mode")
         current_operation_mode = SvanCommand.MODE_SLEEP
         current_joystick_data.data[0] = 6.0
-
+    command_publisher.publish(current_joystick_data)
 
 def set_velocity(vel_x: float = 0.0, vel_y: float = 0.0):
     global current_operation_mode, current_joystick_data
@@ -60,8 +62,8 @@ def set_velocity(vel_x: float = 0.0, vel_y: float = 0.0):
     if current_operation_mode != SvanCommand.MODE_TROT:
         set_operation_mode(SvanCommand.MODE_TROT)
     
-    vel_x = constrain_value(vel_x)
-    vel_y = constrain_value(vel_y)
+    vel_x = constrain_value(vel_x + OFFSET_VELOCITY_X)
+    vel_y = constrain_value(vel_y + OFFSET_VELOCITY_Y)
     
     current_joystick_data.data[1] = vel_x
     current_joystick_data.data[2] = vel_y
