@@ -90,12 +90,12 @@ def set_yaw(direction: int = SvanCommand.YAW_NONE):
         rospy.loginfo("Yaw: None")
         command_publisher.publish(current_key_data)
     
-    elif direction == SvanCommand.YAW_RIGHT:
+    elif direction == SvanCommand.YAW_LEFT:
         current_key_data.data[5] = -1.0
         rospy.loginfo("Yaw: Right")
         command_publisher.publish(current_key_data)
     
-    elif direction == SvanCommand.YAW_LEFT:
+    elif direction == SvanCommand.YAW_RIGHT:
         current_key_data.data[5] = 1.0
         rospy.loginfo("Yaw: Left")
         command_publisher.publish(current_key_data)
