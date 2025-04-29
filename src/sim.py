@@ -5,11 +5,9 @@ import rospy
 
 rospy.init_node('svan_simple_control_node')
 
-command_publisher = rospy.Publisher('/svan/io_interface', Float32MultiArray, queue_size=1)
+command_publisher = rospy.Publisher('/svan/io_interface',Float32MultiArray,queue_size=1)
 
 DISABLE_MANUAL_OVERRIDE = True
-failsafe = False
-
 
 def override_listener(msg: Float32MultiArray):
     global failsafe
@@ -18,14 +16,14 @@ def override_listener(msg: Float32MultiArray):
         failsafe = True
 
 
-base_data = [0, 0, 0, 0, 0, 0, 0, 1000, 0]
+base_data = [0,0,0,0,0,0,0,1000,0]
 current_operation_mode = SvanCommand.MODE_STOP
 current_key_data = Float32MultiArray()
 current_key_data.data = base_data
+failsafe = False
 
-
-def constrain_value(value, minimum: float = -1.0, maximum: float = 1.0):
-    return max(minimum, min(value, maximum))
+def constrain_value(value,minumum: float = -1.0,maximum: float = 1.0):
+    return max(minumum, min(value, maximum))
 
 
 def set_operation_mode(mode: int):
@@ -54,7 +52,6 @@ def set_operation_mode(mode: int):
 
     command_publisher.publish(current_key_data)
 
-
 def set_velocity(vel_x: float = 0.0, vel_y: float = 0.0):
     global current_operation_mode, current_key_data
     if vel_x == 0.0 and vel_y == 0.0:
@@ -64,14 +61,13 @@ def set_velocity(vel_x: float = 0.0, vel_y: float = 0.0):
 
     if current_operation_mode != SvanCommand.MODE_TROT:
         set_operation_mode(SvanCommand.MODE_TROT)
-
+    
     vel_x = constrain_value(vel_x)
     vel_y = constrain_value(vel_y)
     rospy.loginfo(f"Velocity: Vel_X: {vel_x} Vel_Y: {vel_y}")
     current_key_data.data[1] = vel_x
     current_key_data.data[2] = vel_y
     command_publisher.publish(current_key_data)
-
 
 def set_roll(magnitude: float):
     global current_key_data
@@ -80,7 +76,6 @@ def set_roll(magnitude: float):
     rospy.loginfo(f"Roll: {magnitude}")
     command_publisher.publish(current_key_data)
 
-
 def set_pitch(magnitude: float):
     global current_key_data
     magnitude = constrain_value(magnitude)
@@ -88,38 +83,35 @@ def set_pitch(magnitude: float):
     rospy.loginfo(f"Pitch: {magnitude}")
     command_publisher.publish(current_key_data)
 
-
 def set_yaw(direction: int = SvanCommand.YAW_NONE):
     global current_key_data
-    if direction == SvanCommand.YAW_NONE and current_key_data.data[5] != 0:
+    if direction == SvanCommand.YAW_NONE:
         current_key_data.data[5] = 0
         rospy.loginfo("Yaw: None")
         command_publisher.publish(current_key_data)
-
-    elif direction == SvanCommand.YAW_RIGHT and current_key_data.data[5] != -1.0:
+    
+    elif direction == SvanCommand.YAW_RIGHT:
         current_key_data.data[5] = -1.0
         rospy.loginfo("Yaw: Right")
         command_publisher.publish(current_key_data)
-
-    elif direction == SvanCommand.YAW_RIGHT and current_key_data.data[5] != 1.0:
+    
+    elif direction == SvanCommand.YAW_LEFT:
         current_key_data.data[5] = 1.0
         rospy.loginfo("Yaw: Left")
         command_publisher.publish(current_key_data)
 
-
 def set_height(state: int):
     global current_key_data
-
+    
     if state == SvanCommand.HEIGHT_UP and current_key_data.data[8] != 1:
-        current_key_data.data[8] = 1
+        current_key_data.data[8] = 1.0
         rospy.loginfo("Height: Up")
         command_publisher.publish(current_key_data)
-
+    
     elif state == SvanCommand.HEIGHT_DOWN and current_key_data.data[8] != -1:
-        current_key_data.data[8] = -1
+        current_key_data.data[8] = -1.0
         rospy.loginfo("Height: Down")
         command_publisher.publish(current_key_data)
-
 
 def handle_new_command(command: SvanCommand):
     global failsafe
@@ -135,13 +127,13 @@ def handle_new_command(command: SvanCommand):
     # linear movement
     elif command.command_type == SvanCommand.COMMAND_MOVEMENT:
         rospy.logdebug(f"Setting Velocity: Vel_X: {command.vel_x} Vel_Y: {command.vel_y}")
-        set_velocity(vel_x=command.vel_x, vel_y=command.vel_y)
+        set_velocity(vel_x=command.vel_x,vel_y=command.vel_y)
 
     # vertical height
     elif command.command_type == SvanCommand.COMMAND_HEIGHT:
         rospy.logdebug(f"Setting height to {command.height}")
         set_height(state=command.height)
-
+    
     # roll 
     elif command.command_type == SvanCommand.COMMAND_ROLL:
         rospy.logdebug(f"Setting roll to {command.roll}")
@@ -157,9 +149,8 @@ def handle_new_command(command: SvanCommand):
         rospy.logdebug(f"Setting yaw to {command.yaw}")
         set_yaw(direction=command.yaw)
 
-
-rospy.Subscriber('/svan/simple_control', SvanCommand, handle_new_command)
-if (not DISABLE_MANUAL_OVERRIDE): rospy.Subscriber('/svan/io_interface', Float32MultiArray, override_listener)
+rospy.Subscriber('/svan/simple_control',SvanCommand,handle_new_command)
+if(not DISABLE_MANUAL_OVERRIDE): rospy.Subscriber('/svan/io_interface',Float32MultiArray,override_listener)
 
 if __name__ == '__main__':
     try:
