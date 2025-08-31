@@ -65,7 +65,7 @@ python3 src/svan_simple_control/examples/<script>.py
 > 
 > The simple control node differentiates between itself and the joystick command code by publishing a value of `1000.0` at index `7`. If the value is not `1000.0` (in case of the joystick command node) it ceases sending any recieved commands.
 >
-> Make this change to the source on your joystick commander node to prevent operating mode desync. --- [CHANGE HERE]
+> Add the code from `handoff.txt` to the source on the joystick commander to prevent operation mode desyncs like [this](https://x.com/0xkry0sc0pic/status/1908403919379640780).
 
 
 ## running (hardware) (without bridge)
