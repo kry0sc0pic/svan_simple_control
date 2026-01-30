@@ -45,7 +45,7 @@ after starting the gazebo simulation launch file and the mcp.py file. run the fo
 ```bash
 cd ~/xMo
 source devel/setup.bash
-rosrun svan_simple_control simulation.py
+rosrun svan_simple_control sim.py
 ```
 
 _now open 4th terminal are run your script. replace `<script>` with the filename of the example you want to run._
