@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from svan_simple_control_msgs.msg import SvanCommand
+from svan_simple_control.msg import SvanCommand
 import rospy
 
 rospy.init_node('rotate_example_node')
