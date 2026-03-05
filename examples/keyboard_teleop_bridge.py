@@ -83,8 +83,15 @@ KEY_MAP = {
     "s": lambda: post("movement", {"vel_x": 0.0, "vel_y": -SPEED}),
     "a": lambda: post("movement", {"vel_x": -SPEED, "vel_y": 0.0}),
     "d": lambda: post("movement", {"vel_x": SPEED, "vel_y": 0.0}),
-    "q": lambda: post("yaw", {"yaw": YAW_LEFT}),
-    "e": lambda: post("yaw", {"yaw": YAW_RIGHT}),
+    # Yaw requires a non-zero speed to take effect; send a tiny nudge alongside it.
+    "q": lambda: (
+        post("yaw", {"yaw": YAW_LEFT}),
+        post("movement", {"vel_x": 0.0, "vel_y": 0.0001}),
+    ),
+    "e": lambda: (
+        post("yaw", {"yaw": YAW_RIGHT}),
+        post("movement", {"vel_x": 0.0, "vel_y": 0.0001}),
+    ),
     "r": lambda: post("height", {"height": HEIGHT_UP}),
     "f": lambda: post("height", {"height": HEIGHT_DOWN}),
     "1": lambda: post("mode", {"operation_mode": MODE_STOP}),
@@ -99,8 +106,14 @@ RELEASE_MAP = {
     "s": lambda: post("movement", {"vel_x": 0.0, "vel_y": 0.0}),
     "a": lambda: post("movement", {"vel_x": 0.0, "vel_y": 0.0}),
     "d": lambda: post("movement", {"vel_x": 0.0, "vel_y": 0.0}),
-    "q": lambda: post("yaw", {"yaw": YAW_NONE}),
-    "e": lambda: post("yaw", {"yaw": YAW_NONE}),
+    "q": lambda: (
+        post("yaw", {"yaw": YAW_NONE}),
+        post("movement", {"vel_x": 0.0, "vel_y": 0.0}),
+    ),
+    "e": lambda: (
+        post("yaw", {"yaw": YAW_NONE}),
+        post("movement", {"vel_x": 0.0, "vel_y": 0.0}),
+    ),
     "r": lambda: post("height", {"height": STOP_HEIGHT}),
     "f": lambda: post("height", {"height": STOP_HEIGHT}),
 }

@@ -96,8 +96,12 @@ def main():
 
         print(f"Patrol: leg {leg} — 180° turn")
         post(_base, "yaw", {"yaw": YAW_RIGHT})
+        post(
+            _base, "movement", {"vel_x": 0.0, "vel_y": 0.0001}
+        )  # nudge required for yaw
         time.sleep(TURN_SECS)
         post(_base, "yaw", {"yaw": YAW_NONE})
+        post(_base, "movement", {"vel_x": 0.0, "vel_y": 0.0})
         time.sleep(0.5)
 
 

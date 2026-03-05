@@ -50,6 +50,12 @@ yaw_none_cmd = SvanCommand()
 yaw_none_cmd.command_type = SvanCommand.COMMAND_YAW
 yaw_none_cmd.yaw = SvanCommand.YAW_NONE
 
+# A tiny forward nudge is required for yaw to take effect.
+yaw_nudge_cmd = SvanCommand()
+yaw_nudge_cmd.command_type = SvanCommand.COMMAND_MOVEMENT
+yaw_nudge_cmd.vel_x = 0.0
+yaw_nudge_cmd.vel_y = 0.0001
+
 
 def shutdown():
     rospy.loginfo("Patrol: shutting down — stopping robot")
@@ -77,6 +83,7 @@ while not rospy.is_shutdown():
 
     rospy.loginfo(f"Patrol: leg {leg} — 180° turn")
     c_pub.publish(yaw_right_cmd)
+    c_pub.publish(yaw_nudge_cmd)
     rospy.sleep(TURN_SECS)
     c_pub.publish(yaw_none_cmd)
     rospy.sleep(0.5)

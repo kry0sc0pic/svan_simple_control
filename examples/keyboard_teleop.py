@@ -63,6 +63,9 @@ def pub_yaw(direction: int):
     c.command_type = SvanCommand.COMMAND_YAW
     c.yaw = direction
     c_pub.publish(c)
+    # A tiny forward nudge is required for yaw to take effect.
+    nudge = 0.0 if direction == SvanCommand.YAW_NONE else 0.0001
+    pub_movement(0.0, nudge)
 
 
 def pub_height(state: int):

@@ -163,6 +163,12 @@ def main():
 
             if new_yaw != prev_yaw:
                 post("yaw", {"yaw": new_yaw})
+                # A tiny forward nudge is required for yaw to take effect.
+                nudge = 0.0 if new_yaw == YAW_NONE else 0.0001
+                post(
+                    "movement",
+                    {"vel_x": vel_x, "vel_y": vel_y if vel_y != 0.0 else nudge},
+                )
                 prev_yaw = new_yaw
 
             time.sleep(interval)

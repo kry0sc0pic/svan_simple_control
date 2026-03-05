@@ -79,9 +79,13 @@ def main():
 
         print(f"Square: side {side}/4 — turn right 90°")
         post(base, "yaw", {"yaw": YAW_RIGHT})
+        post(
+            base, "movement", {"vel_x": 0.0, "vel_y": 0.0001}
+        )  # nudge required for yaw
         time.sleep(TURN_SECS)
 
         post(base, "yaw", {"yaw": YAW_NONE})
+        post(base, "movement", {"vel_x": 0.0, "vel_y": 0.0})
         time.sleep(0.5)
 
     print("Square: complete — stopping")
