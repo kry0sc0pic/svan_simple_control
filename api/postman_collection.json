@@ -1,0 +1,378 @@
+{
+  "info": {
+    "name": "SVAN Control Bridge",
+    "description": "HTTP API to control the SVAN quadruped robot via the ROS bridge (src/bridge.py).\n\nStart the bridge with:\n  rosrun svan_simple_control bridge.py\n\nThe default base URL is http://localhost:8888. Update the 'base_url' collection variable to match your deployment.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8888",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Status",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Returns bridge status. If ROS is not connected the status field will be 'warning' and the bridge runs in mock mode."
+          }
+        },
+        {
+          "name": "Command history",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/history",
+              "host": ["{{base_url}}"],
+              "path": ["history"]
+            },
+            "description": "Returns the list of all commands sent during this bridge session."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Operation Mode",
+      "description": "POST /mode — switch the robot's operating mode. Values: 1=STOP, 2=TWIRL, 3=PUSHUP, 4=TROT, 5=SLEEP.",
+      "item": [
+        {
+          "name": "Mode — STOP (1)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/mode", "host": ["{{base_url}}"], "path": ["mode"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation_mode\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Switch to STOP mode."
+          }
+        },
+        {
+          "name": "Mode — TWIRL (2)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/mode", "host": ["{{base_url}}"], "path": ["mode"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation_mode\": 2\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Switch to TWIRL mode."
+          }
+        },
+        {
+          "name": "Mode — PUSHUP (3)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/mode", "host": ["{{base_url}}"], "path": ["mode"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation_mode\": 3\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Switch to PUSHUP mode."
+          }
+        },
+        {
+          "name": "Mode — TROT (4)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/mode", "host": ["{{base_url}}"], "path": ["mode"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation_mode\": 4\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Switch to TROT mode. The robot must be in TROT mode before movement commands have any effect."
+          }
+        },
+        {
+          "name": "Mode — SLEEP (5)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/mode", "host": ["{{base_url}}"], "path": ["mode"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation_mode\": 5\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Switch to SLEEP mode."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Movement",
+      "description": "POST /movement — set lateral (vel_x) and longitudinal (vel_y) velocity. Both are normalised to [-1.0, 1.0] and clamped by the bridge. vel_x: negative=left, positive=right. vel_y: negative=backward, positive=forward.",
+      "item": [
+        {
+          "name": "Movement — forward",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/movement", "host": ["{{base_url}}"], "path": ["movement"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vel_x\": 0.0,\n  \"vel_y\": 0.5\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Movement — backward",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/movement", "host": ["{{base_url}}"], "path": ["movement"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vel_x\": 0.0,\n  \"vel_y\": -0.5\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Movement — strafe right",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/movement", "host": ["{{base_url}}"], "path": ["movement"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vel_x\": 0.5,\n  \"vel_y\": 0.0\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Movement — strafe left",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/movement", "host": ["{{base_url}}"], "path": ["movement"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vel_x\": -0.5,\n  \"vel_y\": 0.0\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Movement — halt",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/movement", "host": ["{{base_url}}"], "path": ["movement"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vel_x\": 0.0,\n  \"vel_y\": 0.0\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Stop all lateral/longitudinal motion without leaving TROT mode."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roll",
+      "description": "POST /roll — set normalised roll angle. -1.0=full left, 0.0=neutral, 1.0=full right. Value is clamped to [-1.0, 1.0].",
+      "item": [
+        {
+          "name": "Roll — right (+1)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/roll", "host": ["{{base_url}}"], "path": ["roll"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roll\": 1.0\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Roll — left (-1)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/roll", "host": ["{{base_url}}"], "path": ["roll"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roll\": -1.0\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Roll — center (0)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/roll", "host": ["{{base_url}}"], "path": ["roll"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roll\": 0.0\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pitch",
+      "description": "POST /pitch — set normalised pitch angle. -1.0=full back, 0.0=neutral, 1.0=full front. Value is clamped to [-1.0, 1.0].",
+      "item": [
+        {
+          "name": "Pitch — front (+1)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/pitch", "host": ["{{base_url}}"], "path": ["pitch"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pitch\": 1.0\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Pitch — back (-1)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/pitch", "host": ["{{base_url}}"], "path": ["pitch"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pitch\": -1.0\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Pitch — center (0)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/pitch", "host": ["{{base_url}}"], "path": ["pitch"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pitch\": 0.0\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Yaw",
+      "description": "POST /yaw — set continuous yaw direction. 0=LEFT, 1=RIGHT, 2=NONE (stop rotating).",
+      "item": [
+        {
+          "name": "Yaw — left (0)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/yaw", "host": ["{{base_url}}"], "path": ["yaw"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"yaw\": 0\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Continuously rotate left. Send yaw=2 (NONE) to stop."
+          }
+        },
+        {
+          "name": "Yaw — right (1)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/yaw", "host": ["{{base_url}}"], "path": ["yaw"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"yaw\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Yaw — none (2)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/yaw", "host": ["{{base_url}}"], "path": ["yaw"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"yaw\": 2\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Stop yawing."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Height",
+      "description": "POST /height — set height profile. 1=UP (drive to max), 2=DOWN (drive to min), 3=STOP (hold current position).",
+      "item": [
+        {
+          "name": "Height — UP (1)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/height", "host": ["{{base_url}}"], "path": ["height"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"height\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Drive height to maximum. Send height=3 (STOP) to hold at current position."
+          }
+        },
+        {
+          "name": "Height — DOWN (2)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/height", "host": ["{{base_url}}"], "path": ["height"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"height\": 2\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Drive height to minimum."
+          }
+        },
+        {
+          "name": "Height — STOP (3)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/height", "host": ["{{base_url}}"], "path": ["height"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"height\": 3\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Hold height at current position."
+          }
+        }
+      ]
+    }
+  ]
+}

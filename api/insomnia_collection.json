@@ -1,0 +1,356 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-03-05",
+  "__export_source": "svan_simple_control",
+  "resources": [
+    {
+      "_id": "wrk_svan",
+      "_type": "workspace",
+      "name": "SVAN Control Bridge",
+      "description": "HTTP API to control the SVAN quadruped robot via the ROS bridge (src/bridge.py). Start the bridge with: rosrun svan_simple_control bridge.py"
+    },
+    {
+      "_id": "env_svan_base",
+      "_type": "environment",
+      "parentId": "wrk_svan",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8888"
+      }
+    },
+
+    {
+      "_id": "req_get_root",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Health check",
+      "method": "GET",
+      "url": "{{ _.base_url }}/",
+      "description": "Returns bridge status. If ROS is not connected the status field will be 'warning' and the bridge runs in mock mode."
+    },
+    {
+      "_id": "req_get_history",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Command history",
+      "method": "GET",
+      "url": "{{ _.base_url }}/history",
+      "description": "Returns the list of all commands sent during this bridge session."
+    },
+
+    {
+      "_id": "req_mode_stop",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Mode — STOP (1)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/mode",
+      "description": "Switch to STOP mode.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"operation_mode\": 1\n}"
+      }
+    },
+    {
+      "_id": "req_mode_twirl",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Mode — TWIRL (2)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/mode",
+      "description": "Switch to TWIRL mode.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"operation_mode\": 2\n}"
+      }
+    },
+    {
+      "_id": "req_mode_pushup",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Mode — PUSHUP (3)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/mode",
+      "description": "Switch to PUSHUP mode.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"operation_mode\": 3\n}"
+      }
+    },
+    {
+      "_id": "req_mode_trot",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Mode — TROT (4)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/mode",
+      "description": "Switch to TROT mode. The robot must be in TROT mode before movement commands have any effect.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"operation_mode\": 4\n}"
+      }
+    },
+    {
+      "_id": "req_mode_sleep",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Mode — SLEEP (5)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/mode",
+      "description": "Switch to SLEEP mode.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"operation_mode\": 5\n}"
+      }
+    },
+
+    {
+      "_id": "req_movement_forward",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Movement — forward",
+      "method": "POST",
+      "url": "{{ _.base_url }}/movement",
+      "description": "Walk forward at half speed. vel_x: lateral (-1 left, +1 right). vel_y: longitudinal (-1 back, +1 front). Both clamped to [-1.0, 1.0].",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"vel_x\": 0.0,\n  \"vel_y\": 0.5\n}"
+      }
+    },
+    {
+      "_id": "req_movement_backward",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Movement — backward",
+      "method": "POST",
+      "url": "{{ _.base_url }}/movement",
+      "description": "Walk backward at half speed.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"vel_x\": 0.0,\n  \"vel_y\": -0.5\n}"
+      }
+    },
+    {
+      "_id": "req_movement_strafe_right",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Movement — strafe right",
+      "method": "POST",
+      "url": "{{ _.base_url }}/movement",
+      "description": "Strafe right at half speed.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"vel_x\": 0.5,\n  \"vel_y\": 0.0\n}"
+      }
+    },
+    {
+      "_id": "req_movement_strafe_left",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Movement — strafe left",
+      "method": "POST",
+      "url": "{{ _.base_url }}/movement",
+      "description": "Strafe left at half speed.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"vel_x\": -0.5,\n  \"vel_y\": 0.0\n}"
+      }
+    },
+    {
+      "_id": "req_movement_halt",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Movement — halt",
+      "method": "POST",
+      "url": "{{ _.base_url }}/movement",
+      "description": "Stop all lateral/longitudinal motion without leaving TROT mode.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"vel_x\": 0.0,\n  \"vel_y\": 0.0\n}"
+      }
+    },
+
+    {
+      "_id": "req_roll_right",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Roll — right (+1)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/roll",
+      "description": "Roll body to the right. Range: -1.0 (left) to 1.0 (right). 0.0 is neutral.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"roll\": 1.0\n}"
+      }
+    },
+    {
+      "_id": "req_roll_left",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Roll — left (-1)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/roll",
+      "description": "Roll body to the left.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"roll\": -1.0\n}"
+      }
+    },
+    {
+      "_id": "req_roll_center",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Roll — center (0)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/roll",
+      "description": "Return roll to neutral.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"roll\": 0.0\n}"
+      }
+    },
+
+    {
+      "_id": "req_pitch_front",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Pitch — front (+1)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/pitch",
+      "description": "Pitch body forward. Range: -1.0 (back) to 1.0 (front). 0.0 is neutral.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"pitch\": 1.0\n}"
+      }
+    },
+    {
+      "_id": "req_pitch_back",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Pitch — back (-1)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/pitch",
+      "description": "Pitch body backward.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"pitch\": -1.0\n}"
+      }
+    },
+    {
+      "_id": "req_pitch_center",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Pitch — center (0)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/pitch",
+      "description": "Return pitch to neutral.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"pitch\": 0.0\n}"
+      }
+    },
+
+    {
+      "_id": "req_yaw_left",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Yaw — left (0)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/yaw",
+      "description": "Continuously rotate left. Send yaw=2 (NONE) to stop.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"yaw\": 0\n}"
+      }
+    },
+    {
+      "_id": "req_yaw_right",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Yaw — right (1)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/yaw",
+      "description": "Continuously rotate right.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"yaw\": 1\n}"
+      }
+    },
+    {
+      "_id": "req_yaw_none",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Yaw — none (2)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/yaw",
+      "description": "Stop yawing.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"yaw\": 2\n}"
+      }
+    },
+
+    {
+      "_id": "req_height_up",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Height — UP (1)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/height",
+      "description": "Drive height to maximum. Send height=3 (STOP) to hold at current position.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"height\": 1\n}"
+      }
+    },
+    {
+      "_id": "req_height_down",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Height — DOWN (2)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/height",
+      "description": "Drive height to minimum.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"height\": 2\n}"
+      }
+    },
+    {
+      "_id": "req_height_stop",
+      "_type": "request",
+      "parentId": "wrk_svan",
+      "name": "Height — STOP (3)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/height",
+      "description": "Hold height at current position.",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"height\": 3\n}"
+      }
+    }
+  ]
+}

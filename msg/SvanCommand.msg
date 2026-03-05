@@ -9,6 +9,7 @@ uint8 MODE_SLEEP = 5
 ## Height
 uint8 HEIGHT_UP = 1
 uint8 HEIGHT_DOWN = 2
+uint8 STOP_HEIGHT = 3
 
 ## Command Type
 uint8 COMMAND_OPERATION_MODE = 0

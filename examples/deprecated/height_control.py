@@ -1,3 +1,6 @@
+# DEPRECATED: This example uses the old svan_simple_control_msgs package and the
+# legacy API. Use the current message definition in svan_simple_control.msg instead.
+
 import cv2
 import mediapipe as mp
 import rospy
@@ -5,16 +8,16 @@ from svan_simple_control_msgs.msg import SvanCommand
 import time
 
 # Initialize ROS node
-rospy.init_node('height_control')
+rospy.init_node("height_control")
 
 # Create a publisher to send commands
 cmd = SvanCommand()
 cmd.command_type = SvanCommand.COMMAND_OPERATION_MODE
 cmd.operation_mode = SvanCommand.MODE_TROT
-publisher = rospy.Publisher('/svan/simple_control', SvanCommand, queue_size=1)
+publisher = rospy.Publisher("/svan/simple_control", SvanCommand, queue_size=1)
 publisher.publish(cmd)
-current = 'sit'
-current = 'stand'
+current = "sit"
+current = "stand"
 # Initialize MediaPipe Hand Tracking
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
@@ -41,7 +44,7 @@ while cap.isOpened():
             index_finger_tip = hand_landmarks.landmark[8]  # Index finger tip
 
             # Determine the hand height relative to the wrist
-            if index_finger_tip.y < wrist.y - 0.1 and current == 'sit':  
+            if index_finger_tip.y < wrist.y - 0.1 and current == "sit":
                 # cmd_pub.publish("stand")
                 # key_data.data[8] = 1
                 cmd = SvanCommand()
@@ -49,18 +52,18 @@ while cap.isOpened():
                 cmd.height = SvanCommand.HEIGHT_UP
                 publisher.publish(cmd)
                 print("Command: Stand")
-                current = 'stand'
-            elif index_finger_tip.y > wrist.y + 0.1 and current == 'stand':
+                current = "stand"
+            elif index_finger_tip.y > wrist.y + 0.1 and current == "stand":
                 cmd = SvanCommand()
                 cmd.command_type = SvanCommand.COMMAND_HEIGHT
                 cmd.height = SvanCommand.HEIGHT_DOWN
                 publisher.publish(cmd)
                 print("Command: Sit")
-                current = 'sit'
+                current = "sit"
     # Show the camera feed
     cv2.imshow("Gesture Control", frame)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
 cap.release()

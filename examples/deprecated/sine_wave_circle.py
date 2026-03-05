@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
+# DEPRECATED: This example uses the old svan_simple_control_msgs package and the
+# legacy `direction`/`velocity` API. Update to use svan_simple_control.msg with
+# vel_x/vel_y fields before running.
 from svan_simple_control_msgs.msg import SvanCommand
 import rospy
 
-rospy.init_node('circle_example')
+rospy.init_node("circle_example")
 
-command_publisher = rospy.Publisher('/svan/simple_control',SvanCommand,queue_size=3)
+command_publisher = rospy.Publisher("/svan/simple_control", SvanCommand, queue_size=3)
 
 while not rospy.is_shutdown():
     print("Stopping")
@@ -20,7 +23,7 @@ while not rospy.is_shutdown():
     command.operation_mode = SvanCommand.MODE_TROT
     command_publisher.publish(command)
     rospy.sleep(2)
-    
+
     # cirle commands
     print("Moving in a circle")
     direction_cmd = SvanCommand()
@@ -46,7 +49,7 @@ while not rospy.is_shutdown():
             height_cmd.height = SvanCommand.HEIGHT_UP
         command_publisher.publish(height_cmd)
         rospy.sleep(5)
-    
+
     stop_cmd = SvanCommand()
     stop_cmd.command_type = SvanCommand.COMMAND_OPERATION_MODE
     stop_cmd.operation_mode = SvanCommand.MODE_STOP
@@ -57,6 +60,3 @@ while not rospy.is_shutdown():
     sleep_cmd.operation_mode = SvanCommand.MODE_SLEEP
     command_publisher.publish(sleep_cmd)
     rospy.signal_shutdown("completed")
-
-
-            
