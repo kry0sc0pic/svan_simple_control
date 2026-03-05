@@ -11,12 +11,21 @@
       "description": "HTTP API to control the SVAN quadruped robot via the ROS bridge (src/bridge.py). Start the bridge with: rosrun svan_simple_control bridge.py"
     },
     {
-      "_id": "env_svan_base",
+      "_id": "env_svan_sim",
       "_type": "environment",
       "parentId": "wrk_svan",
-      "name": "Base Environment",
+      "name": "Simulation",
       "data": {
-        "base_url": "http://localhost:8888"
+        "base_url": "http://127.0.0.1:8888"
+      }
+    },
+    {
+      "_id": "env_svan_hw",
+      "_type": "environment",
+      "parentId": "wrk_svan",
+      "name": "Hardware",
+      "data": {
+        "base_url": "http://10.42.4.9:8888"
       }
     },
 

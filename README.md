@@ -1,275 +1,308 @@
 # svan_simple_control
 
-## setup (simulation)
-```bash
-# cd into workspace
-cd ~/xMo/src
+A ROS package for high-level control of the SVAN quadruped robot. Provides a simple command interface over ROS topics, an HTTP bridge for clients that cannot connect to ROS directly, and a library of ready-to-run examples.
 
-# clone package
+---
+
+## Table of Contents
+
+1. [Setup](#setup)
+2. [Running](#running)
+3. [HTTP Bridge](#http-bridge)
+4. [Safety](#safety)
+5. [Message Reference](#message-reference)
+6. [Examples](#examples)
+7. [Deprecated Examples](#deprecated-examples)
+
+---
+
+## Setup
+
+### Simulation
+
+```bash
+cd ~/xMo/src
 git clone https://github.com/kry0sc0pic/svan_simple_control.git
-# add to build script
+
 cd ~/xMo
 echo "catkin build svan_simple_control" >> svan_build.sh
 echo "source devel/setup.bash" >> svan_build.sh
 
-# build package
 catkin build svan_simple_control
 source devel/setup.bash
 ```
 
-## setup (hardware)
-```bash
-# cd into workspace
-cd ~/dev/xMo/src
+### Hardware
 
-# clone packages
+```bash
+cd ~/dev/xMo/src
 git clone https://github.com/kry0sc0pic/svan_simple_control.git
 
-# add to build script
 cd ~/dev/xMo
 echo "catkin build svan_simple_control" >> svan_build.sh
 echo "source devel/setup.bash" >> svan_build.sh
 
-# build packages
 catkin build svan_simple_control
 source devel/setup.bash
 
-# (optional) install dependencies for http bridge
+# optional — required only if using the HTTP bridge
 python3 -m pip install --upgrade pip
 python3 -m pip install fastapi uvicorn pydantic
 ```
 
-## running (simulation)
-after starting the gazebo simulation launch file and the mcp.py file. run the following in a third terminal
+---
+
+## Running
+
+### Simulation
+
+After starting the Gazebo simulation launch file and `mcp.py`, open a third terminal:
 
 ```bash
-cd ~/xMo
-source devel/setup.bash
+cd ~/xMo && source devel/setup.bash
 rosrun svan_simple_control sim.py
 ```
 
-_now open 4th terminal are run your script. replace `<script>` with the filename of the example you want to run._
+Then open a fourth terminal to run an example script:
+
 ```bash
-cd ~/xMo
-source devel/setup.bash
+cd ~/xMo && source devel/setup.bash
 python3 src/svan_simple_control/examples/<script>.py
 ```
 
 ---
 
-> ***🔴 Important Note***
->
-> Always be ready to take manual control of the SVAN using the joystick in case something unexpected starts happening.
->
-> After the node starts, if joystick data is published by an external source, it will cease sending commands until the node is restarted.
->
-> The simple control node differentiates between itself and the joystick command code by publishing a value of `1000.0` at index `7`. If the value is not `1000.0` (i.e. from the joystick commander node) it ceases sending any received commands.
->
-> **Simulation (`sim.py`):** Manual override detection is disabled by default (`DISABLE_MANUAL_OVERRIDE = True`). Set this flag to `False` to enable it.
->
-> **Hardware (`hardware.py`):** Manual override detection is always active.
->
-> Apply the code from `handoff.txt` to the joystick commander source on the hardware using `scripts/apply_handoff.py` to prevent operation mode desyncs like [this](https://x.com/0xkry0sc0pic/status/1908403919379640780).
+### Hardware (without bridge)
 
+> If you are having issues subscribing and publishing to SVAN ROS topics from a desktop/laptop, use the [HTTP bridge](#http-bridge) instead.
 
-## running (hardware) (without bridge)
+After completing all startup steps (joystick calibration, sleep calibration, Moetus interface launch, `mcp.py`), open two SSH sessions on the SVAN.
 
-> if you are having issues subscribing and publishing to SVAN ros topics from a desktop/laptop. Have a look at the HTTP bridge below.
-
-after completing all the startup steps (joystick calibration, sleep calibration, moetus interface launch and starting the `mcp.py`). run the following commands in two ssh sessions on the SVAN.
-
-_in the first ssh session_
+**Session 1** — start the control node:
 ```bash
-cd ~/dev/xMo
-source devel/setup.bash
+cd ~/dev/xMo && source devel/setup.bash
 rosrun svan_simple_control hardware.py
 ```
 
-_in the second ssh session_
+**Session 2** — run your script:
 ```bash
-cd ~/dev/xMo
-source devel/setup.bash
+cd ~/dev/xMo && source devel/setup.bash
 python3 src/svan_simple_control/examples/<script>.py
-``` 
+```
 
-## running (hardware) (with bridge)
+---
 
-after completing all the startup steps (joystick calibration, sleep calibration, moetus interface launch and starting the `mcp.py`). run the following commands in two ssh sessions on the SVAN.
+### Hardware (with bridge)
 
-_in the first ssh session_
+After completing all startup steps, open two SSH sessions on the SVAN.
+
+**Session 1** — start the control node:
 ```bash
-cd ~/dev/xMo
-source devel/setup.bash
+cd ~/dev/xMo && source devel/setup.bash
 rosrun svan_simple_control hardware.py
 ```
 
-_in the second ssh session_
+**Session 2** — start the bridge:
 ```bash
-cd ~/dev/xMo
-source devel/setup.bash
+cd ~/dev/xMo && source devel/setup.bash
 rosrun svan_simple_control bridge.py
-``` 
+```
 
-## bridge
-The HTTP bridge allows sending commands to the SVAN using POST requests to remove the ROS dependency for the client machine or work around ROS connection issues.
+The bridge will be reachable from your laptop at `http://10.42.4.9:8888`. See the [HTTP Bridge](#http-bridge) section for details.
 
-The documentation can be accessed by running the bridge with `rosrun svan_simple_control bridge.py` and navigating to `/docs` in a web browser. The parameter names correspond to the message definition below.
+---
 
-API collections for importing into Insomnia or Postman are available in the `api/` directory:
+## Safety
 
-- `api/insomnia_collection.json` — import via Insomnia → *Import / Export → Import Data*
-- `api/postman_collection.json` — import via Postman → *Import → Upload Files*
+> **Always be ready to take manual control of the SVAN using the joystick if something unexpected happens.**
 
-Both collections use a `base_url` variable (default `http://localhost:8888`) that you can override per-environment.
+The simple control node identifies its own messages by publishing `1000.0` at index `7` of the joystick data array. If it receives a message where index `7` is not `1000.0` (i.e. from the physical joystick commander), it treats it as a manual override and stops sending commands until the node is restarted.
 
+| Context | Behaviour |
+| --- | --- |
+| `sim.py` | Override detection **disabled** by default (`DISABLE_MANUAL_OVERRIDE = True`). Set to `False` to enable. |
+| `hardware.py` | Override detection **always active**. |
 
-## message definitions
-these are the following variables you can give as part of the `SvanCommand` message. The source is at `msg/SvanCommand.msg`.
+To prevent operation mode desyncs (example [here](https://x.com/0xkry0sc0pic/status/1908403919379640780)), apply the patch from `handoff.txt` to the joystick commander source on the hardware using `scripts/apply_handoff.py`.
 
-0. `command_type` (`uint8`) - what aspect you want to control
+---
 
-    | value | aspect |
-    | ---- | --- |
-    | 0 | OPERATION MODE (trot, pushup, etc.) |
-    | 1 | LINEAR MOVEMENT |
-    | 2 | ROLL ANGLE |
-    | 3 | PITCH ANGLE |
-    | 4 | YAW DIRECTION |
-    | 5 | HEIGHT |
-    | 6 | JOYSTICK OVERRIDE _(unimplemented)_ |
+## HTTP Bridge
 
-1. `operation_mode` (`uint8`) - operation mode to switch to. used when `command_type` is `0`.
+The HTTP bridge exposes the SVAN control interface over a REST API, removing the ROS dependency from the client machine.
 
-    | value | mode |
-    | --- | --- |
-    | 1 | STOP |
-    | 2 | TWIRL |
-    | 3 | PUSHUP |
-    | 4 | TROT |
-    | 5 | SLEEP |
+### Addresses
 
+| Context | Base URL |
+| --- | --- |
+| Simulation (localhost) | `http://localhost:8888` |
+| Hardware (on the SVAN) | `http://10.42.4.9:8888` |
 
-2. `height` (`uint8`) - height profile to set. used when `command_type` is `5`.
+> When using the bridge examples (`*_bridge.py`) or the API collections, update `--host` / `base_url` to match your context — `localhost` for simulation, `10.42.4.9` for hardware.
 
-    | value | height |
-    | --- | --- |
-    | 1 | UP (MAX) |
-    | 2 | DOWN (MIN) |
-    | 3 | STOP (hold current position) |
+### API Documentation
 
-    _granular height control is being actively developed_
+Interactive docs are available at `<base_url>/docs` while the bridge is running.
 
-3. `vel_x` (`float32`) (`-1.0` - `1.0`) - normalised value of velocity in x-axis. positive x-axis is the right of the robot.
+### API Collections
 
-4. `vel_y` (`float32`) (`-1.0` - `1.0`) - normalised value of velocity in y-axis. positive y-axis is the front of the robot.
+Pre-built collections for Insomnia and Postman are in the `api/` directory:
 
-5. `roll` (`float32`) - normalised roll angle. used when `command_type` is `2`.
+| File | How to import |
+| --- | --- |
+| `api/insomnia_collection.json` | Insomnia → *Import / Export → Import Data* |
+| `api/postman_collection.json` | Postman → *Import → Upload Files* |
 
-    | value | roll angle |
-    | --- | --- |
-    | -1 | LEFT |
-    | 0 | CENTER |
-    | 1 | RIGHT |
+Both collections define a `base_url` variable. Change it to `http://10.42.4.9:8888` when targeting hardware.
 
-6. `pitch` (`float32`) - normalised pitch angle. used when `command_type` is `3`.
+### Endpoints
 
-    | value | pitch angle |
-    | --- | --- |
-    | 1 | FRONT |
-    | 0 | CENTER |
-    | -1 | BACK |
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/` | Health check — returns bridge status and mock mode warning if ROS is not connected |
+| `GET` | `/history` | List of all commands sent in the current session |
+| `POST` | `/mode` | Set operation mode (`operation_mode`: 1–5) |
+| `POST` | `/movement` | Set velocity (`vel_x`, `vel_y`: −1.0 to 1.0) |
+| `POST` | `/roll` | Set roll angle (`roll`: −1.0 to 1.0) |
+| `POST` | `/pitch` | Set pitch angle (`pitch`: −1.0 to 1.0) |
+| `POST` | `/yaw` | Set yaw direction (`yaw`: 0=LEFT, 1=RIGHT, 2=NONE) |
+| `POST` | `/height` | Set height state (`height`: 1=UP, 2=DOWN, 3=STOP) |
 
-7. `yaw` (`uint8`) - yaw direction. used when `command_type` is `4`.
+---
 
-    | value | direction |
-    | --- | --- |
-    | 0 | LEFT |
-    | 1 | RIGHT |
-    | 2 | NONE |
+## Message Reference
 
+Message type: `svan_simple_control/SvanCommand`. Source: `msg/SvanCommand.msg`.
 
+### `command_type` (`uint8`)
 
-## examples
-*bridge versions of certain examples are also available. They can be identified with the `bridge` suffix in the name. They should be used with the HTTP bridge.*
+Selects which aspect of the robot to control.
 
-### rotate
-SVAN rotates continuously around the Z-axis.
+| Value | Constant | Aspect |
+| --- | --- | --- |
+| 0 | `COMMAND_OPERATION_MODE` | Operation mode |
+| 1 | `COMMAND_MOVEMENT` | Linear velocity |
+| 2 | `COMMAND_ROLL` | Roll angle |
+| 3 | `COMMAND_PITCH` | Pitch angle |
+| 4 | `COMMAND_YAW` | Yaw direction |
+| 5 | `COMMAND_HEIGHT` | Height profile |
+| 6 | `COMMAND_JOYSTICK_OVERRIDE` | _(unimplemented)_ |
 
-source: `examples/rotate.py`
+---
 
-### pushup and twirl
-SVAN cycles through pushup and twirl modes.
+### `operation_mode` (`uint8`)
 
-source: `examples/pushup_twirl.py` | bridge: `examples/pushup_twirl_bridge.py`
+Used when `command_type = 0`.
 
-### wave
-Cycles the robot's height between UP and DOWN repeatedly, creating a bowing/waving motion. Good first demo — no locomotion required.
+| Value | Constant | Mode |
+| --- | --- | --- |
+| 1 | `MODE_STOP` | Stop |
+| 2 | `MODE_TWIRL` | Twirl |
+| 3 | `MODE_PUSHUP` | Pushup |
+| 4 | `MODE_TROT` | Trot |
+| 5 | `MODE_SLEEP` | Sleep |
 
-source: `examples/wave.py` | bridge: `examples/wave_bridge.py`
+---
 
-### square
-Walks the robot in an approximate square: forward, turn 90° right, repeat four times. Demonstrates combining movement and yaw in a structured sequence.
+### `vel_x` / `vel_y` (`float32`, −1.0 to 1.0)
 
-Tune `SIDE_SECS` and `TURN_SECS` at the top of the file to match your surface and speed.
+Used when `command_type = 1`.
 
-source: `examples/square.py` | bridge: `examples/square_bridge.py`
+| Field | Axis | Positive direction |
+| --- | --- | --- |
+| `vel_x` | Lateral | Right |
+| `vel_y` | Longitudinal | Forward |
 
-### strafe
-Demonstrates lateral (`vel_x`) movement by walking a diamond pattern: forward → strafe right → backward → strafe left. The primary example for `vel_x`.
+---
 
-source: `examples/strafe.py` | bridge: `examples/strafe_bridge.py`
+### `roll` (`float32`, −1.0 to 1.0)
 
-### attitude sweep
-Sweeps roll and pitch independently through their full range (−1 → 0 → 1 → 0), demonstrating the body orientation API. The robot stays in place — no locomotion.
+Used when `command_type = 2`.
 
-source: `examples/attitude_sweep.py` | bridge: `examples/attitude_sweep_bridge.py`
+| Value | Position |
+| --- | --- |
+| −1.0 | Full left |
+| 0.0 | Neutral |
+| 1.0 | Full right |
 
-### patrol
-Runs an indefinite back-and-forth patrol: walk forward for `LEG_SECS`, stop briefly, turn 180°, repeat. Press Ctrl+C to stop cleanly. Useful for continuous lab demos and testing sustained locomotion.
+---
 
-source: `examples/patrol.py` | bridge: `examples/patrol_bridge.py`
+### `pitch` (`float32`, −1.0 to 1.0)
 
-### choreography
-A scripted multi-step routine that exercises the full API: walk in → height wave → attitude display → twirl → pushup sequence → walk out → sleep. Introduces a `play_sequence()` helper for composing routines from `(SvanCommand, hold_seconds)` tuples.
+Used when `command_type = 3`.
 
-source: `examples/choreography.py` | bridge: `examples/choreography_bridge.py`
+| Value | Position |
+| --- | --- |
+| 1.0 | Full forward |
+| 0.0 | Neutral |
+| −1.0 | Full back |
 
-### keyboard teleop
-Real-time keyboard control over ROS. `w/s/a/d` to move, `q/e` to yaw, `r/f` for height, `1`–`5` for modes, Space to halt, Esc to quit.
+---
 
-**Requires:** `pip install pynput`
+### `yaw` (`uint8`)
 
-source: `examples/keyboard_teleop.py` | bridge: `examples/keyboard_teleop_bridge.py`
+Used when `command_type = 4`.
 
-### gamepad
-USB gamepad control over ROS using pygame. Left stick for movement, right stick X for yaw, face buttons for modes, shoulder buttons for height.
+| Value | Constant | Direction |
+| --- | --- | --- |
+| 0 | `YAW_LEFT` | Left |
+| 1 | `YAW_RIGHT` | Right |
+| 2 | `YAW_NONE` | Stop yawing |
 
-**Requires:** `pip install pygame`
+---
 
-source: `examples/gamepad.py` | bridge: `examples/gamepad_bridge.py`
+### `height` (`uint8`)
 
+Used when `command_type = 5`.
 
+| Value | Constant | Behaviour |
+| --- | --- | --- |
+| 1 | `HEIGHT_UP` | Drive to maximum height |
+| 2 | `HEIGHT_DOWN` | Drive to minimum height |
+| 3 | `STOP_HEIGHT` | Hold current position |
 
-## examples (deprecated)
+> Granular height control is under active development.
 
-### sine wave circle
+---
 
-moves in a circular path while varying height.
+## Examples
 
-source: `examples/deprecated/sine_wave_circle.py`
+Bridge counterparts (identified by the `_bridge` suffix) send the same commands via HTTP and should be used with the [HTTP bridge](#http-bridge) instead of directly over ROS.
 
-### hand gesture movement control
+### Basic
 
-author: [Atharv Nawale]()
+| Example | Description | Bridge |
+| --- | --- | --- |
+| `examples/rotate.py` | Rotate continuously around the Z-axis | — |
+| `examples/pushup_twirl.py` | Cycle through pushup and twirl modes | `examples/pushup_twirl_bridge.py` |
+| `examples/wave.py` | Cycle height UP/DOWN — good first demo, no locomotion | `examples/wave_bridge.py` |
+| `examples/strafe.py` | Diamond pattern using `vel_x` — primary strafe demo | `examples/strafe_bridge.py` |
+| `examples/square.py` | Walk an approximate square using movement + yaw | `examples/square_bridge.py` |
+| `examples/attitude_sweep.py` | Sweep roll and pitch through full range, robot stays in place | `examples/attitude_sweep_bridge.py` |
 
-move and stop the svan using hand gestures. powered by mediapipe.
+### Advanced
 
-source: `examples/deprecated/hand_control.py`
+| Example | Description | Bridge |
+| --- | --- | --- |
+| `examples/patrol.py` | Indefinite back-and-forth patrol, Ctrl+C to stop cleanly | `examples/patrol_bridge.py` |
+| `examples/choreography.py` | Scripted multi-act routine exercising the full API | `examples/choreography_bridge.py` |
+| `examples/keyboard_teleop.py` | Real-time keyboard control (`w/s/a/d`, `q/e`, `r/f`, `1`–`5`) | `examples/keyboard_teleop_bridge.py` |
+| `examples/gamepad.py` | USB gamepad control via pygame (left stick, face buttons, shoulders) | `examples/gamepad_bridge.py` |
 
-### hand gesture height control
+**Prerequisites for interactive examples:**
+```bash
+pip install pynput   # keyboard_teleop
+pip install pygame   # gamepad
+```
 
-author: [Dhruv Shah]()
+---
 
-control the svan's height using gestures. powered by mediapipe.
+## Deprecated Examples
 
-source: `examples/deprecated/height_control.py`
+These examples use the old `svan_simple_control_msgs` package and legacy API. They are kept for reference but will not run without modification.
+
+| Example | Description | Author |
+| --- | --- | --- |
+| `examples/deprecated/sine_wave_circle.py` | Circular path with sinusoidal height variation | — |
+| `examples/deprecated/hand_control.py` | Move/stop control via hand gestures (MediaPipe) | Atharv Nawale |
+| `examples/deprecated/height_control.py` | Height control via hand gestures (MediaPipe) | Dhruv Shah |

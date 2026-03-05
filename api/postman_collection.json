@@ -1,14 +1,27 @@
 {
   "info": {
     "name": "SVAN Control Bridge",
-    "description": "HTTP API to control the SVAN quadruped robot via the ROS bridge (src/bridge.py).\n\nStart the bridge with:\n  rosrun svan_simple_control bridge.py\n\nThe default base URL is http://localhost:8888. Update the 'base_url' collection variable to match your deployment.",
+    "description": "HTTP API to control the SVAN quadruped robot via the ROS bridge (src/bridge.py).\n\nStart the bridge with:\n  rosrun svan_simple_control bridge.py\n\nTwo base_url variables are provided:\n  base_url_sim  — http://127.0.0.1:8888  (simulation, default)\n  base_url_hw   — http://10.42.4.9:8888  (hardware)\n\nSet {{base_url}} to whichever environment you need.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:8888",
-      "type": "string"
+      "value": "http://127.0.0.1:8888",
+      "type": "string",
+      "description": "Active base URL. Switch to base_url_hw for hardware."
+    },
+    {
+      "key": "base_url_sim",
+      "value": "http://127.0.0.1:8888",
+      "type": "string",
+      "description": "Simulation (local) bridge URL"
+    },
+    {
+      "key": "base_url_hw",
+      "value": "http://10.42.4.9:8888",
+      "type": "string",
+      "description": "Hardware bridge URL"
     }
   ],
   "item": [

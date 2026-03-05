@@ -67,7 +67,11 @@ def handle_sigint(sig, frame):
 def main():
     global _base
     parser = argparse.ArgumentParser(description="SVAN patrol example via HTTP bridge")
-    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument(
+        "--host",
+        default="127.0.0.1",
+        help="Bridge host (default: 127.0.0.1 for simulation, use 10.42.4.9 for hardware)",
+    )
     parser.add_argument("--port", default=8888, type=int)
     args = parser.parse_args()
 
