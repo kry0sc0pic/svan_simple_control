@@ -6,7 +6,7 @@ import rospy
 rospy.init_node("svan_simple_control_node")
 
 command_publisher = rospy.Publisher(
-    "/svan/joystick_data", Float32MultiArray, queue_size=1
+    "/svan/joystick_data", Float32MultiArray, queue_size=10
 )
 failsafe = False
 OFFSET_VELOCITY_Y = -0.192
@@ -32,7 +32,7 @@ def constrain_value(value, minumum: float = -1.0, maximum: float = 1.0):
 
 def set_operation_mode(mode: int):
     global current_operation_mode, current_joystick_data, command_publisher
-    current_joystick_data.data = base_data
+    current_joystick_data.data = list(base_data)
     if mode == SvanCommand.MODE_TROT:
         rospy.loginfo("Trot Mode")
         current_joystick_data.data[0] = 4.0

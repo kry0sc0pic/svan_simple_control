@@ -6,7 +6,7 @@ import rospy
 rospy.init_node("svan_simple_control_node")
 
 command_publisher = rospy.Publisher(
-    "/svan/io_interface", Float32MultiArray, queue_size=1
+    "/svan/io_interface", Float32MultiArray, queue_size=10
 )
 
 DISABLE_MANUAL_OVERRIDE = True
@@ -32,7 +32,7 @@ def constrain_value(value, minumum: float = -1.0, maximum: float = 1.0):
 
 def set_operation_mode(mode: int):
     global current_operation_mode, current_key_data, command_publisher
-    current_key_data.data = base_data
+    current_key_data.data = list(base_data)
     if mode == SvanCommand.MODE_TROT:
         rospy.loginfo("Trot Mode")
         current_operation_mode = SvanCommand.MODE_TROT
