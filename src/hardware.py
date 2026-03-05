@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import os
+import yaml
 from svan_simple_control.msg import SvanCommand
 from std_msgs.msg import Float32MultiArray
 import rospy
@@ -9,8 +11,27 @@ command_publisher = rospy.Publisher(
     "/svan/joystick_data", Float32MultiArray, queue_size=10
 )
 failsafe = False
-OFFSET_VELOCITY_Y = -0.192
-OFFSET_VELOCITY_X = 0
+
+# Load drift-correction offsets from config/hardware_offsets.yaml.
+# Fall back to 0.0 / 0.0 with a warning if the file is missing or malformed.
+_OFFSETS_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "config", "hardware_offsets.yaml"
+)
+try:
+    with open(_OFFSETS_PATH, "r") as _f:
+        _offsets = yaml.safe_load(_f) or {}
+    OFFSET_VELOCITY_X = float(_offsets.get("offset_velocity_x", 0.0))
+    OFFSET_VELOCITY_Y = float(_offsets.get("offset_velocity_y", 0.0))
+    rospy.loginfo(
+        f"Loaded hardware offsets: OFFSET_VELOCITY_X={OFFSET_VELOCITY_X}, "
+        f"OFFSET_VELOCITY_Y={OFFSET_VELOCITY_Y}"
+    )
+except Exception as _e:
+    rospy.logwarn(
+        f"Could not load hardware_offsets.yaml ({_e}); defaulting offsets to 0.0"
+    )
+    OFFSET_VELOCITY_X = 0.0
+    OFFSET_VELOCITY_Y = 0.0
 
 
 def override_listener(msg: Float32MultiArray):

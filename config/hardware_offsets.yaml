@@ -1,0 +1,14 @@
+# Hardware velocity drift-correction offsets.
+#
+# These values are added to every movement command sent by hardware.py to
+# counteract the robot's physical bias on a given surface.
+#
+# Tune interactively with:
+#   python3 scripts/tune_offsets.py
+#
+# Units: normalised velocity (-1.0 to 1.0)
+#   offset_velocity_x  — lateral axis  (positive = right)
+#   offset_velocity_y  — longitudinal axis (positive = forward)
+
+offset_velocity_x: 0.0
+offset_velocity_y: -0.192
