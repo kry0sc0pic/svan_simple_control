@@ -12,6 +12,21 @@ command_publisher = rospy.Publisher(
 )
 failsafe = False
 
+# ── Manual override deadzone ───────────────────────────────────────────────────
+# Minimum absolute change required in any field before an incoming joystick
+# message is considered a genuine external override.  This prevents noisy
+# near-zero signals from accidentally tripping the failsafe.
+#
+#   OVERRIDE_IDENTITY_DEADZONE  – applied to index 7 (the sentinel field).
+#       Our messages stamp index 7 with 1000.0; an external message will be
+#       close to 0.  The gap is large, so a generous threshold is fine.
+#   OVERRIDE_AXIS_DEADZONE      – applied to all other indices (0-6, 8).
+#       Joystick axes idle near 0; a 0.03 threshold filters electrical noise
+#       while still catching any intentional stick movement.
+OVERRIDE_IDENTITY_DEADZONE: float = 1.0
+OVERRIDE_AXIS_DEADZONE: float = 0.03
+_last_override_msg: list = []
+
 # Load drift-correction offsets from config/hardware_offsets.yaml.
 # Fall back to 0.0 / 0.0 with a warning if the file is missing or malformed.
 _OFFSETS_PATH = os.path.join(
@@ -35,8 +50,31 @@ except Exception as _e:
 
 
 def override_listener(msg: Float32MultiArray):
-    global failsafe
-    if msg.data[7] != 1000 and not failsafe:
+    global failsafe, _last_override_msg
+
+    if failsafe:
+        return
+
+    data = list(msg.data)
+
+    # First message — record it and wait for a change before deciding.
+    if not _last_override_msg:
+        _last_override_msg = data
+        return
+
+    # Identity check: is index 7 meaningfully different from our 1000-sentinel?
+    identity_changed = abs(data[7] - 1000.0) > OVERRIDE_IDENTITY_DEADZONE
+
+    # Change check: did any field move more than the axis deadzone?
+    axis_changed = any(
+        abs(data[i] - _last_override_msg[i]) > OVERRIDE_AXIS_DEADZONE
+        for i in range(len(data))
+        if i != 7
+    )
+
+    _last_override_msg = data
+
+    if identity_changed and axis_changed:
         rospy.logerr("Manual Override")
         failsafe = True
 

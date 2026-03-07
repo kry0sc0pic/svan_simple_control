@@ -118,6 +118,13 @@ The bridge will be reachable from your laptop at `http://10.42.4.9:8888`. See th
 
 The simple control node identifies its own messages by publishing `1000.0` at index `7` of the joystick data array. If it receives a message where index `7` is not `1000.0` (i.e. from the physical joystick commander), it treats it as a manual override and stops sending commands until the node is restarted.
 
+**Deadzone filtering** — to prevent electrical noise or idle joystick drift from accidentally tripping the failsafe, override detection requires two conditions to be met simultaneously:
+
+1. Index `7` of the incoming message differs from `1000.0` by more than `OVERRIDE_IDENTITY_DEADZONE` (default `1.0`).
+2. At least one other field changed by more than `OVERRIDE_AXIS_DEADZONE` (default `0.03`) compared to the previous message.
+
+Both thresholds are module-level constants and can be adjusted at the top of `sim.py` / `hardware.py`.
+
 | Context | Behaviour |
 | --- | --- |
 | `sim.py` | Override detection **disabled** by default (`DISABLE_MANUAL_OVERRIDE = True`). Set to `False` to enable. |

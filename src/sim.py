@@ -11,10 +11,44 @@ command_publisher = rospy.Publisher(
 
 DISABLE_MANUAL_OVERRIDE = True
 
+# ── Manual override deadzone ───────────────────────────────────────────────────
+# Minimum absolute change required in any field before an incoming joystick
+# message is considered a genuine external override.  This prevents noisy
+# near-zero signals from accidentally tripping the failsafe.
+#
+#   OVERRIDE_IDENTITY_DEADZONE  – applied to index 7 (the sentinel field).
+#   OVERRIDE_AXIS_DEADZONE      – applied to all other indices (0-6, 8).
+OVERRIDE_IDENTITY_DEADZONE: float = 1.0
+OVERRIDE_AXIS_DEADZONE: float = 0.03
+_last_override_msg: list = []
+
 
 def override_listener(msg: Float32MultiArray):
-    global failsafe
-    if msg.data[7] != 1000 and not failsafe:
+    global failsafe, _last_override_msg
+
+    if DISABLE_MANUAL_OVERRIDE or failsafe:
+        return
+
+    data = list(msg.data)
+
+    # First message — record it and wait for a change before deciding.
+    if not _last_override_msg:
+        _last_override_msg = data
+        return
+
+    # Identity check: is index 7 meaningfully different from our 1000-sentinel?
+    identity_changed = abs(data[7] - 1000.0) > OVERRIDE_IDENTITY_DEADZONE
+
+    # Change check: did any field move more than the axis deadzone?
+    axis_changed = any(
+        abs(data[i] - _last_override_msg[i]) > OVERRIDE_AXIS_DEADZONE
+        for i in range(len(data))
+        if i != 7
+    )
+
+    _last_override_msg = data
+
+    if identity_changed and axis_changed:
         rospy.logerr("Manual Override")
         failsafe = True
 
