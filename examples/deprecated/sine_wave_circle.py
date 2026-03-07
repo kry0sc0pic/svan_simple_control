@@ -2,7 +2,7 @@
 # DEPRECATED: This example uses the old svan_simple_control_msgs package and the
 # legacy `direction`/`velocity` API. Update to use svan_simple_control.msg with
 # vel_x/vel_y fields before running.
-from svan_simple_control_msgs.msg import SvanCommand
+from svan_simple_control.msg import SvanCommand
 import rospy
 
 rospy.init_node("circle_example")
