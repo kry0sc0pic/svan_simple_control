@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# DEPRECATED: This example uses the old svan_simple_control_msgs package and the
-# legacy `direction`/`velocity` API. Update to use svan_simple_control.msg with
-# vel_x/vel_y fields before running.
 from svan_simple_control.msg import SvanCommand
 import rospy
 
@@ -24,17 +21,15 @@ while not rospy.is_shutdown():
     command_publisher.publish(command)
     rospy.sleep(2)
 
-    # cirle commands
     print("Moving in a circle")
     direction_cmd = SvanCommand()
     direction_cmd.command_type = SvanCommand.COMMAND_MOVEMENT
-    direction_cmd.direction = SvanCommand.DIRECTION_FORWARD
-    direction_cmd.velocity = 0.5
+    direction_cmd.vel_x = 0.0
+    direction_cmd.vel_y = 0.5
 
     yaw_cmd = SvanCommand()
     yaw_cmd.command_type = SvanCommand.COMMAND_YAW
-    yaw_cmd.direction = SvanCommand.YAW_LEFT
-    yaw_cmd.velocity = 1
+    yaw_cmd.yaw = SvanCommand.YAW_LEFT
 
     command_publisher.publish(direction_cmd)
     rospy.sleep(0.1)
