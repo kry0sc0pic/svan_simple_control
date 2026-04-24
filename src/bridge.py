@@ -44,6 +44,7 @@ class OperationModeRequest(BaseModel):
 class MovementRequest(BaseModel):
     vel_x: float = Field(..., description="Velocity along X axis (-1.0 to 1.0)")
     vel_y: float = Field(..., description="Velocity along Y axis (-1.0 to 1.0)")
+    yaw_offset: float = Field(0.0, description="Yaw offset mixed into movement (+ve = right, -ve = left, -1.0 to 1.0)")
 
 
 class RollRequest(BaseModel):
@@ -110,10 +111,11 @@ async def set_operation_mode(request: OperationModeRequest):
 
 @app.post("/movement")
 async def set_movement(request: MovementRequest):
-    vel_x = constrain_value(request.vel_x)  # Constrain values
-    vel_y = constrain_value(request.vel_y)  # Constrain values
+    vel_x = constrain_value(request.vel_x)
+    vel_y = constrain_value(request.vel_y)
+    yaw_offset = constrain_value(request.yaw_offset)
 
-    cmd_data = {"command_type": "MOVEMENT", "vel_x": vel_x, "vel_y": vel_y}
+    cmd_data = {"command_type": "MOVEMENT", "vel_x": vel_x, "vel_y": vel_y, "yaw_offset": yaw_offset}
     command_history.append(cmd_data)
 
     if ros_connected:
@@ -122,10 +124,11 @@ async def set_movement(request: MovementRequest):
             cmd.command_type = SvanCommand.COMMAND_MOVEMENT
             cmd.vel_x = vel_x
             cmd.vel_y = vel_y
+            cmd.yaw_offset = yaw_offset
             command_publisher.publish(cmd)
             return {
                 "status": "ok",
-                "message": f"Set movement: vel_x={vel_x}, vel_y={vel_y}",
+                "message": f"Set movement: vel_x={vel_x}, vel_y={vel_y}, yaw_offset={yaw_offset}",
             }
         except Exception as e:
             raise HTTPException(
@@ -134,7 +137,7 @@ async def set_movement(request: MovementRequest):
     else:
         return {
             "status": "mock",
-            "message": f"Set movement: vel_x={vel_x}, vel_y={vel_y} (MOCK MODE)",
+            "message": f"Set movement: vel_x={vel_x}, vel_y={vel_y}, yaw_offset={yaw_offset} (MOCK MODE)",
         }
 
 

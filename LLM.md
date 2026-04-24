@@ -83,6 +83,7 @@ svan_simple_control/
 | `operation_mode` | `uint8` | 1–5 | Target operation mode |
 | `vel_x` | `float32` | −1.0 to 1.0 | Lateral velocity (positive = right) |
 | `vel_y` | `float32` | −1.0 to 1.0 | Longitudinal velocity (positive = forward) |
+| `yaw_offset` | `float32` | −1.0 to 1.0 | Continuous yaw mixed into movement (positive = right, negative = left, 0.0 = straight) |
 | `roll` | `float32` | −1.0 to 1.0 | Roll angle (−1 = full left, 0 = neutral, +1 = full right) |
 | `pitch` | `float32` | −1.0 to 1.0 | Pitch angle (+1 = full forward, 0 = neutral, −1 = full back) |
 | `yaw` | `uint8` | 0–2 | Yaw direction |
@@ -159,7 +160,7 @@ Interactive docs available at `<base_url>/docs`
 | `GET` | `/` | Health check |
 | `GET` | `/history` | Command history |
 | `POST` | `/mode` | Set operation mode |
-| `POST` | `/movement` | Set velocity |
+| `POST` | `/movement` | Set velocity with optional yaw offset |
 | `POST` | `/roll` | Set roll angle |
 | `POST` | `/pitch` | Set pitch angle |
 | `POST` | `/yaw` | Set yaw direction |
@@ -221,12 +222,13 @@ Interactive docs available at `<base_url>/docs`
 **Request**:
 ```json
 {
-  "vel_x": float,  // -1.0 to 1.0
-  "vel_y": float   // -1.0 to 1.0
+  "vel_x": float,      // -1.0 to 1.0
+  "vel_y": float,      // -1.0 to 1.0
+  "yaw_offset": float  // -1.0 to 1.0, optional, default 0.0 (positive = right, negative = left)
 }
 ```
 
-Values are automatically constrained to valid range.
+Values are automatically constrained to valid range. `yaw_offset` blends a continuous yaw rate into the movement command — positive values steer right, negative values steer left. Omitting the field (or setting it to `0.0`) produces straight-line motion.
 
 **Response**:
 ```json

@@ -37,6 +37,7 @@ uint8 yaw
 
 float32 vel_x
 float32 vel_y
+float32 yaw_offset
 
 
 
