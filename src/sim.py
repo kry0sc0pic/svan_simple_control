@@ -57,7 +57,7 @@ def set_operation_mode(mode: int):
     command_publisher.publish(current_key_data)
 
 
-def set_velocity(vel_x: float = 0.0, vel_y: float = 0.0):
+def set_velocity(vel_x: float = 0.0, vel_y: float = 0.0, yaw_offset: float = 0.0):
     global current_operation_mode, current_key_data
     if vel_x == 0.0 and vel_y == 0.0:
         if current_operation_mode == SvanCommand.MODE_TROT:
@@ -69,9 +69,11 @@ def set_velocity(vel_x: float = 0.0, vel_y: float = 0.0):
 
     vel_x = constrain_value(vel_x)
     vel_y = constrain_value(vel_y)
-    rospy.loginfo(f"Velocity: Vel_X: {vel_x} Vel_Y: {vel_y}")
+    yaw_offset = constrain_value(yaw_offset)
+    rospy.loginfo(f"Velocity: Vel_X: {vel_x} Vel_Y: {vel_y} Yaw_Offset: {yaw_offset}")
     current_key_data.data[1] = vel_x
     current_key_data.data[2] = vel_y
+    current_key_data.data[5] = yaw_offset
     command_publisher.publish(current_key_data)
 
 
@@ -142,9 +144,9 @@ def handle_new_command(command: SvanCommand):
     # linear movement
     elif command.command_type == SvanCommand.COMMAND_MOVEMENT:
         rospy.logdebug(
-            f"Setting Velocity: Vel_X: {command.vel_x} Vel_Y: {command.vel_y}"
+            f"Setting Velocity: Vel_X: {command.vel_x} Vel_Y: {command.vel_y} Yaw_Offset: {command.yaw_offset}"
         )
-        set_velocity(vel_x=command.vel_x, vel_y=command.vel_y)
+        set_velocity(vel_x=command.vel_x, vel_y=command.vel_y, yaw_offset=command.yaw_offset)
 
     # vertical height
     elif command.command_type == SvanCommand.COMMAND_HEIGHT:

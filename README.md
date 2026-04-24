@@ -162,7 +162,7 @@ Both collections define a `base_url` variable. Change it to `http://10.42.4.9:88
 | `GET` | `/` | Health check — returns bridge status and mock mode warning if ROS is not connected |
 | `GET` | `/history` | List of all commands sent in the current session |
 | `POST` | `/mode` | Set operation mode (`operation_mode`: 1–5) |
-| `POST` | `/movement` | Set velocity (`vel_x`, `vel_y`: −1.0 to 1.0) |
+| `POST` | `/movement` | Set velocity (`vel_x`, `vel_y`: −1.0 to 1.0; optional `yaw_offset`: −1.0 to 1.0, default 0.0) |
 | `POST` | `/roll` | Set roll angle (`roll`: −1.0 to 1.0) |
 | `POST` | `/pitch` | Set pitch angle (`pitch`: −1.0 to 1.0) |
 | `POST` | `/yaw` | Set yaw direction (`yaw`: 0=LEFT, 1=RIGHT, 2=NONE) |
@@ -204,7 +204,7 @@ Used when `command_type = 0`.
 
 ---
 
-### `vel_x` / `vel_y` (`float32`, −1.0 to 1.0)
+### `vel_x` / `vel_y` / `yaw_offset` (`float32`, −1.0 to 1.0)
 
 Used when `command_type = 1`.
 
@@ -212,6 +212,9 @@ Used when `command_type = 1`.
 | --- | --- | --- |
 | `vel_x` | Lateral | Right |
 | `vel_y` | Longitudinal | Forward |
+| `yaw_offset` | Rotational | Right (positive = turn right, negative = turn left) |
+
+`yaw_offset` blends a continuous yaw rate into the movement command. A value of `0.0` (the default) produces straight-line motion. Non-zero values steer the robot while it walks — e.g. `yaw_offset = 0.3` curves it rightward without requiring a separate `COMMAND_YAW` message.
 
 ---
 
